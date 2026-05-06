@@ -155,7 +155,7 @@ Paiement effectué via PayPal 👊🏾`
                 <Users className="h-4 w-4" />
                 Nombre de personnes
                 </label>
-
+</div>
 <div className="rounded-2xl border border-white/10 bg-black/40 p-4">
   <label className="mb-2 flex items-center gap-2 text-sm text-white/70">
     Montant de ma contribution
