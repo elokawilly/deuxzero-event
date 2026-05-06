@@ -15,12 +15,15 @@ export default function DeuxZeroEventSite() {
   const PRICE_PER_PERSON = 30;
 
   const [form, setForm] = useState({
-    name: "",
-    phone: "",
-    peopleCount: 1,
-    amount: 30,
-    message: "",
-  });
+  name: "",
+  email: "",
+  peopleCount: 0,
+  childrenCount: 0,
+  bbqPresence: "A confirmer",
+  paymentMethod: "PayPal",
+  amount: 30,
+  message: "",
+});
 
   const total = useMemo(() => {
   return Number(form.amount || 0);
@@ -131,24 +134,40 @@ Paiement effectué via PayPal 👊🏾`
               />
             </div>
 
-            {/* PHONE */}
+            * EMAIL *
             <div className="rounded-2xl border border-white/10 bg-black/40 p-4">
-              <label className="mb-2 flex items-center gap-2 text-sm text-white/70">
-                <Phone className="h-4 w-4" />
-                Téléphone
-              </label>
+  <label className="mb-2 flex items-center gap-2 text-sm text-white/70">
+    Email *
+  </label>
 
-              <input
-                type="text"
-                placeholder="Ex : 06 00 00 00 00"
-                className="w-full bg-transparent text-lg outline-none"
-                value={form.phone}
-                onChange={(e) =>
-                  setForm({ ...form, phone: e.target.value })
-                }
-              />
-            </div>
+  <input
+    type="email"
+    required
+    placeholder="Ex : willy@email.com"
+    className="w-full bg-transparent text-lg outline-none"
+    value={form.email}
+    onChange={(e) =>
+      setForm({ ...form, email: e.target.value })
+    }
+  />
+</div>
+<div className="rounded-2xl border border-white/10 bg-black/40 p-4">
+  <label className="mb-2 text-sm text-white/70">
+    Présence au barbecue
+  </label>
 
+  <select
+    className="w-full bg-black text-lg outline-none"
+    value={form.bbqPresence}
+    onChange={(e) =>
+      setForm({ ...form, bbqPresence: e.target.value })
+    }
+  >
+    <option>Oui</option>
+    <option>Non</option>
+    <option>A confirmer</option>
+  </select>
+</div>
             {/* PEOPLE */}
             {/* GUESTS */}
 <div className="rounded-2xl border border-white/10 bg-black/40 p-4">
@@ -156,6 +175,22 @@ Paiement effectué via PayPal 👊🏾`
     <Users className="h-4 w-4" />
     Nombre d'invités attendus 
   </label>
+
+<div className="rounded-2xl border border-white/10 bg-black/40 p-4">
+  <label className="mb-2 text-sm text-white/70">
+    Nombre d’enfants
+  </label>
+
+  <input
+    type="number"
+    min="0"
+    className="w-full bg-transparent text-lg outline-none"
+    value={form.childrenCount}
+    onChange={(e) =>
+      setForm({ ...form, childrenCount: Number(e.target.value) })
+    }
+  />
+</div>
 
   <input
     type="number"
