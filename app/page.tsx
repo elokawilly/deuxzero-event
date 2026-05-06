@@ -150,11 +150,23 @@ Paiement effectué via PayPal 👊🏾`
             </div>
 
             {/* PEOPLE */}
-            <div className="rounded-2xl border border-white/10 bg-black/40 p-4">
-              <label className="mb-2 flex items-center gap-2 text-sm text-white/70">
-                <Users className="h-4 w-4" />
-                Nombre de personnes
-                </label>
+            {/* GUESTS */}
+<div className="rounded-2xl border border-white/10 bg-black/40 p-4">
+  <label className="mb-2 flex items-center gap-2 text-sm text-white/70">
+    <Users className="h-4 w-4" />
+    Nombre de mes invités
+  </label>
+
+  <input
+    type="number"
+    min="0"
+    step="1"
+    className="w-full bg-transparent text-lg outline-none"
+    value={form.peopleCount}
+    onChange={(e) =>
+      setForm({ ...form, peopleCount: Number(e.target.value) })
+    }
+  />
 </div>
 <div className="rounded-2xl border border-white/10 bg-black/40 p-4">
   <label className="mb-2 flex items-center gap-2 text-sm text-white/70">
