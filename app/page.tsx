@@ -154,7 +154,7 @@ Paiement effectué via PayPal 👊🏾`
 <div className="rounded-2xl border border-white/10 bg-black/40 p-4">
   <label className="mb-2 flex items-center gap-2 text-sm text-white/70">
     <Users className="h-4 w-4" />
-    Nombre de mes invités
+    Nombre d'invités attendus 
   </label>
 
   <input
@@ -170,7 +170,7 @@ Paiement effectué via PayPal 👊🏾`
 </div>
 <div className="rounded-2xl border border-white/10 bg-black/40 p-4">
   <label className="mb-2 flex items-center gap-2 text-sm text-white/70">
-    Ma contribution: Entrez un montant ci-dessous
+    Ma contribution: Renseignez votre montant ci-dessous
   </label>
 
   <input
