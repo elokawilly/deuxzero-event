@@ -170,13 +170,13 @@ Paiement effectué via PayPal 👊🏾`
 </div>
 <div className="rounded-2xl border border-white/10 bg-black/40 p-4">
   <label className="mb-2 flex items-center gap-2 text-sm text-white/70">
-    Montant de ma contribution
+    Ma contribution: Entrez un montant ci-dessous
   </label>
 
   <input
     type="number"
     min="1"
-    placeholder="Ex : 30"
+    placeholder="Ex : 0"
     className="w-full bg-transparent text-lg outline-none"
     value={form.amount}
     onChange={(e) =>
