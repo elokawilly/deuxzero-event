@@ -18,12 +18,13 @@ export default function DeuxZeroEventSite() {
     name: "",
     phone: "",
     peopleCount: 1,
+    amount: 30,
     message: "",
   });
 
   const total = useMemo(() => {
-    return PRICE_PER_PERSON * Number(form.peopleCount || 1);
-  }, [form.peopleCount]);
+  return Number(form.amount || 0);
+}, [form.amount]);
 
   const paypalLink = `https://paypal.me/willyeloka/${total}`;
 
@@ -32,7 +33,7 @@ export default function DeuxZeroEventSite() {
 
 Nom : ${form.name}
 Téléphone : ${form.phone}
-Nombre de personnes : ${form.peopleCount}
+Nombre de personnes: ${form.peopleCount}
 Montant : ${total} €
 
 Message : ${form.message}
@@ -153,18 +154,24 @@ Paiement effectué via PayPal 👊🏾`
               <label className="mb-2 flex items-center gap-2 text-sm text-white/70">
                 <Users className="h-4 w-4" />
                 Nombre de personnes
-              </label>
+                </div>
 
-              <input
-                type="number"
-                min="1"
-                className="w-full bg-transparent text-lg outline-none"
-                value={form.peopleCount}
-                onChange={(e) =>
-                  setForm({ ...form, peopleCount: Number(e.target.value) })
-                }
-              />
-            </div>
+<div className="rounded-2xl border border-white/10 bg-black/40 p-4">
+  <label className="mb-2 flex items-center gap-2 text-sm text-white/70">
+    Montant de ma contribution
+  </label>
+
+  <input
+    type="number"
+    min="1"
+    placeholder="Ex : 30"
+    className="w-full bg-transparent text-lg outline-none"
+    value={form.amount}
+    onChange={(e) =>
+      setForm({ ...form, amount: Number(e.target.value) })
+    }
+  />
+</div>
 
             {/* MESSAGE */}
             <div className="rounded-2xl border border-white/10 bg-black/40 p-4">
@@ -310,7 +317,7 @@ Paiement effectué via PayPal 👊🏾`
     href="https://docs.google.com/spreadsheets/d/165HRyHbAa9cghL4fo5VcSSg364mNQFcJShL1Ychu1qY/edit?usp=sharing"
     target="_blank"
     rel="noopener noreferrer"
-    className="rounded-2xl bg-orange-500 px-6 py-4 text-lg font-semibold text-white shadow-lg transition hover:bg-orange-400"
+    className="rounded-2xl bg-green-600 hover:bg-green-700 px-6 py-4 text-lg font-semibold text-white shadow-lg transition hover:bg-orange-400"
   >
     Voir le suivi des contributions
   </a>
