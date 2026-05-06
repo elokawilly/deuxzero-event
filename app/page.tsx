@@ -4,7 +4,7 @@ import React, { useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import {
   Users,
-  Phone,
+  Email,
   CreditCard,
   CheckCircle2,
   Flame,
@@ -35,7 +35,7 @@ export default function DeuxZeroEventSite() {
     `🔥 Contribution 2Zéro 🔥
 
 Nom : ${form.name}
-Téléphone : ${form.phone}
+Email : ${form.email}
 Nombre de personnes: ${form.peopleCount}
 Montant : ${total} €
 
@@ -125,7 +125,7 @@ Paiement effectué via PayPal 👊🏾`
 
               <input
                 type="text"
-                placeholder="Ex : Le Foker"
+                placeholder="Ex : Ivanol petit de Grevy"
                 className="w-full bg-transparent text-lg outline-none"
                 value={form.name}
                 onChange={(e) =>
@@ -134,8 +134,8 @@ Paiement effectué via PayPal 👊🏾`
               />
             </div>
 
-            * EMAIL *
-            <div className="rounded-2xl border border-white/10 bg-black/40 p-4">
+{/* EMAIL */}
+<div className="rounded-2xl border border-white/10 bg-black/40 p-4">
   <label className="mb-2 flex items-center gap-2 text-sm text-white/70">
     Email *
   </label>
@@ -143,7 +143,7 @@ Paiement effectué via PayPal 👊🏾`
   <input
     type="email"
     required
-    placeholder="Ex : willy@email.com"
+    placeholder="Ex : manukiller@email.com"
     className="w-full bg-transparent text-lg outline-none"
     value={form.email}
     onChange={(e) =>
@@ -237,6 +237,23 @@ Paiement effectué via PayPal 👊🏾`
               />
             </div>
           </div>
+
+<div className="rounded-2xl border border-white/10 bg-black/40 p-4">
+  <label className="mb-2 text-sm text-white/70">
+    Moyen de paiement
+  </label>
+
+  <select
+    className="w-full bg-black text-lg outline-none"
+    value={form.paymentMethod}
+    onChange={(e) =>
+      setForm({ ...form, paymentMethod: e.target.value })
+    }
+  >
+    <option>PayPal</option>
+    <option>Espèces</option>
+  </select>
+</div>
 
           {/* TOTAL */}
           <div className="mt-6 rounded-3xl border border-orange-500/20 bg-orange-500/10 p-5">
