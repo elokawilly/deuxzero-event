@@ -170,7 +170,7 @@ Paiement effectué via PayPal 👊🏾`
 </div>
 <div className="rounded-2xl border border-white/10 bg-black/40 p-4">
   <label className="mb-2 flex items-center gap-2 text-sm text-white/70">
-    Ma contribution: Renseignez votre montant ci-dessous
+    Ma contribution: Vous pouvez modifier le montant ci-dessous affiché 
   </label>
 
   <input
