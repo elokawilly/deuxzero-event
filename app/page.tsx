@@ -4,7 +4,7 @@ import React, { useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import {
   Users,
-  Email,
+  Mail,
   CreditCard,
   CheckCircle2,
   Flame,
@@ -19,7 +19,8 @@ export default function DeuxZeroEventSite() {
   email: "",
   peopleCount: 0,
   childrenCount: 0,
-  bbqPresence: "A confirmer",
+  adultCount: 0,
+  bbqPresence: "Oui",
   paymentMethod: "PayPal",
   amount: 30,
   message: "",
@@ -30,7 +31,51 @@ export default function DeuxZeroEventSite() {
 }, [form.amount]);
 
   const paypalLink = `https://paypal.me/willyeloka/${total}`;
+const GOOGLE_SHEET_LINK =
+  "https://docs.google.com/spreadsheets/d/165HRyHbAa9cghL4fo5VcSSg364mNQFcJShL1Ychu1qY/edit?usp=sharing";
 
+const [submitted, setSubmitted] = useState(false);
+
+const notificationMessage = `
+Monsieur ${form.name} a effectué une mise à jour du formulaire.
+
+Le montant de sa participation est : ${total} €
+Présence au barbecue : ${form.bbqPresence}
+Nombre d'adultes : ${form.adultCount}
+Nombre d'enfants : ${form.childrenCount}
+
+Le 2Zéro !
+`;
+
+const sendNotification = () => {
+  if (!form.name || !form.email) {
+    alert("Merci de renseigner votre nom et votre email.");
+    return false;
+  }
+
+  const subject = encodeURIComponent("Mise à jour formulaire 2Zéro");
+  const body = encodeURIComponent(notificationMessage);
+
+  window.open(
+    `mailto:willyserge237@gmail.com?subject=${subject}&body=${body}`,
+    "_blank"
+  );
+
+  setSubmitted(true);
+  return true;
+};
+
+const handlePaypalClick = () => {
+  const ok = sendNotification();
+
+  if (ok) {
+    window.open(paypalLink, "_blank", "noopener,noreferrer");
+  }
+};
+
+const handleReservationClick = () => {
+  sendNotification();
+};
   const whatsappMessage = encodeURIComponent(
     `🔥 Contribution 2Zéro 🔥
 
@@ -137,6 +182,7 @@ Paiement effectué via PayPal 👊🏾`
 {/* EMAIL */}
 <div className="rounded-2xl border border-white/10 bg-black/40 p-4">
   <label className="mb-2 flex items-center gap-2 text-sm text-white/70">
+  <Mail className="h-4 w-4" />
     Email *
   </label>
 
@@ -157,7 +203,7 @@ Paiement effectué via PayPal 👊🏾`
   </label>
 
   <select
-    className="w-full bg-black text-lg outline-none"
+    className="w-full bg-black text-sm md:text-base outline-none"
     value={form.bbqPresence}
     onChange={(e) =>
       setForm({ ...form, bbqPresence: e.target.value })
@@ -170,38 +216,56 @@ Paiement effectué via PayPal 👊🏾`
 </div>
             {/* PEOPLE */}
             {/* GUESTS */}
+{/* INVITÉS */}
 <div className="rounded-2xl border border-white/10 bg-black/40 p-4">
-  <label className="mb-2 flex items-center gap-2 text-sm text-white/70">
-    <Users className="h-4 w-4" />
-    Nombre d'invités attendus 
+  <label className="mb-4 flex items-center gap-2 text-lg text-white/80">
+    <Users className="h-5 w-5" />
+    Nombre d'invités attendus
   </label>
 
-<div className="rounded-2xl border border-white/10 bg-black/40 p-4">
-  <label className="mb-2 text-sm text-white/70">
-    Nombre d’enfants
-  </label>
+  <div className="grid grid-cols-2 gap-4 rounded-2xl border border-white/10 bg-black/60 p-6">
 
-  <input
-    type="number"
-    min="0"
-    className="w-full bg-transparent text-lg outline-none"
-    value={form.childrenCount}
-    onChange={(e) =>
-      setForm({ ...form, childrenCount: Number(e.target.value) })
-    }
-  />
-</div>
+    {/* ENFANTS */}
+    <div className="flex flex-col items-center justify-center">
+      <span className="mb-3 text-sm text-white/70">
+        Nombre d’enfants
+      </span>
 
-  <input
-    type="number"
-    min="0"
-    step="1"
-    className="w-full bg-transparent text-lg outline-none"
-    value={form.peopleCount}
-    onChange={(e) =>
-      setForm({ ...form, peopleCount: Number(e.target.value) })
-    }
-  />
+      <input
+        type="number"
+        min="0"
+        value={form.childrenCount}
+        onChange={(e) =>
+          setForm({
+            ...form,
+            childrenCount: Number(e.target.value),
+          })
+        }
+        className="w-20 bg-transparent text-center text-5xl font-bold text-white outline-none"
+      />
+    </div>
+
+    {/* ADULTES */}
+    <div className="flex flex-col items-center justify-center">
+      <span className="mb-3 text-sm text-white/70">
+        Nombre d’adultes
+      </span>
+
+      <input
+        type="number"
+        min="0"
+        value={form.adultCount}
+        onChange={(e) =>
+          setForm({
+            ...form,
+            adultCount: Number(e.target.value),
+          })
+        }
+        className="w-20 bg-transparent text-center text-5xl font-bold text-white outline-none"
+      />
+    </div>
+
+  </div>
 </div>
 <div className="rounded-2xl border border-white/10 bg-black/40 p-4">
   <label className="mb-2 flex items-center gap-2 text-sm text-white/70">
@@ -244,7 +308,7 @@ Paiement effectué via PayPal 👊🏾`
   </label>
 
   <select
-    className="w-full bg-black text-lg outline-none"
+    className="w-full bg-black text-sm md:text-base outline-none"
     value={form.paymentMethod}
     onChange={(e) =>
       setForm({ ...form, paymentMethod: e.target.value })
@@ -268,25 +332,52 @@ Paiement effectué via PayPal 👊🏾`
             </div>
           </div>
 
-          {/* BUTTONS */}
-          <div className="mt-6 space-y-4">
-            <a
-              href={paypalLink}
-              target="_blank"
-              className="flex items-center justify-center gap-3 rounded-2xl bg-orange-500 px-6 py-5 text-lg font-bold text-white transition hover:bg-orange-400"
-            >
-              <CreditCard className="h-5 w-5" />
-              Payer avec PayPal
-            </a>
+{/* BUTTONS */}
+<div className="mt-6 space-y-4">
+  {submitted ? (
+    <div className="rounded-2xl border border-green-500/30 bg-green-950/40 p-6 text-center">
+      <p className="text-lg font-semibold text-white">
+        La grande Famille du 2Zéro vous remercie.
+      </p>
 
-            <a
-              href={`https://wa.me/?text=${whatsappMessage}`}
-              target="_blank"
-              className="flex items-center justify-center gap-3 rounded-2xl border border-white/10 bg-white/5 px-6 py-5 text-lg font-semibold text-white transition hover:bg-white/10"
-            >
-              Confirmer aussi par WhatsApp
-            </a>
-          </div>
+      <p className="mt-3 text-sm text-white/70">
+        N'hésitez pas à consulter le statut de votre réservation. Nous avons hâte
+        de vous retrouver et partager un bon moment avec vous.
+      </p>
+
+    </div>
+  ) : (
+    <>
+      {form.paymentMethod === "PayPal" ? (
+        <button
+          type="button"
+          onClick={handlePaypalClick}
+          className="flex w-full items-center justify-center gap-3 rounded-2xl bg-orange-500 px-6 py-4 text-lg font-bold text-white transition hover:bg-orange-400"
+        >
+          <CreditCard className="h-5 w-5" />
+          Payer avec PayPal
+        </button>
+      ) : (
+        <button
+          type="button"
+          onClick={handleReservationClick}
+          className="flex w-full items-center justify-center rounded-2xl bg-green-600 px-6 py-4 text-lg font-bold text-white transition hover:bg-green-700"
+        >
+          Enregistrer ma réservation
+        </button>
+      )}
+
+      <a
+        href={`https://wa.me/?text=${whatsappMessage}`}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="flex w-full items-center justify-center gap-3 rounded-2xl border border-white/10 bg-white/10 px-6 py-4 text-lg font-bold text-white transition hover:bg-white/20"
+      >
+        Confirmer aussi par WhatsApp
+      </a>
+    </>
+  )}
+</div>
         </motion.div>
 
         {/* RIGHT */}
