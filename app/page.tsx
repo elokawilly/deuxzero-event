@@ -301,6 +301,21 @@ Paiement effectué via PayPal 👊🏾`
               familial 🔥
             </p>
           </div>
+<div className="mt-6 flex flex-col items-center gap-4 text-center">
+  <p className="text-white/70 text-sm md:text-base">
+    Je participe et je suis le statut de ma contribution via le lien ci-dessous.
+  </p>
+
+  <a
+    href="https://docs.google.com/spreadsheets/d/165HRyHbAa9cghL4fo5VcSSg364mNQFcJShL1Ychu1qY/edit?usp=sharing"
+    target="_blank"
+    rel="noopener noreferrer"
+    className="rounded-2xl bg-orange-500 px-6 py-4 text-lg font-semibold text-white shadow-lg transition hover:bg-orange-400"
+  >
+    Voir le suivi des contributions
+  </a>
+</div>
+
         </motion.div>
       </section>
 
