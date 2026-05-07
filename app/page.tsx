@@ -92,12 +92,15 @@ const sendEmailNotification = async () => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        name: form.name,
-        email: form.email,
-        peopleCount: form.peopleCount,
-        total,
-        message: form.message,
-      }),
+  name: form.name,
+  email: form.email,
+  total,
+  bbqPresence: form.bbqPresence,
+  adultCount: form.adultCount,
+  childrenCount: form.childrenCount,
+  paymentMethod: form.paymentMethod,
+  message: form.message,
+}),
     });
   } catch (error) {
     console.error("Erreur notification :", error);
@@ -269,26 +272,6 @@ Paiement effectué via PayPal 👊🏾`
 
   <div className="grid grid-cols-2 gap-4 rounded-2xl border border-white/10 bg-black/60 p-6">
 
-    {/* ENFANTS */}
-    <div className="flex flex-col items-center justify-center">
-      <span className="mb-3 text-sm text-white/70">
-        Nombre d’enfants
-      </span>
-
-      <input
-        type="number"
-        min="0"
-        value={form.childrenCount}
-        onChange={(e) =>
-          setForm({
-            ...form,
-            childrenCount: Number(e.target.value),
-          })
-        }
-        className="w-20 bg-transparent text-center text-5xl font-bold text-white outline-none"
-      />
-    </div>
-
     {/* ADULTES */}
     <div className="flex flex-col items-center justify-center">
       <span className="mb-3 text-sm text-white/70">
@@ -303,6 +286,26 @@ Paiement effectué via PayPal 👊🏾`
           setForm({
             ...form,
             adultCount: Number(e.target.value),
+          })
+        }
+        className="w-20 bg-transparent text-center text-5xl font-bold text-white outline-none"
+      />
+    </div>
+
+    {/* ENFANTS */}
+    <div className="flex flex-col items-center justify-center">
+      <span className="mb-3 text-sm text-white/70">
+        Nombre d’enfants
+      </span>
+
+      <input
+        type="number"
+        min="0"
+        value={form.childrenCount}
+        onChange={(e) =>
+          setForm({
+            ...form,
+            childrenCount: Number(e.target.value),
           })
         }
         className="w-20 bg-transparent text-center text-5xl font-bold text-white outline-none"
