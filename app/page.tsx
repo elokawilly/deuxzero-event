@@ -184,7 +184,7 @@ Paiement effectué via ${form.paymentMethod} 👊🏾`
               FC 2Zéro Paris
             </div>
             <h1 className="text-5xl font-black leading-tight md:text-7xl">
-              Match Amical & BBQ
+              Barbecue Géant & Familiale
             </h1>
 
             <p className="mt-6 max-w-2xl text-lg text-white/70 md:text-xl">
@@ -195,14 +195,13 @@ Paiement effectué via ${form.paymentMethod} 👊🏾`
             <div className="mt-10 flex flex-wrap justify-center gap-4">
               <a
                 href="#participer"
-                className="rounded-2xl bg-orange-500 px-8 py-4 font-semibold text-white transition hover:bg-orange-400"
-              >
+                className="flex items-center justify-center rounded-2xl bg-orange-500 px-10 py-5 text-center text-3xl font-extrabold text-white shadow-lg transition hover:bg-orange-400"              >
                 Participer maintenant
               </a>
 
-              <div className="rounded-2xl border border-white/10 bg-white/5 px-8 py-4 text-white/70">
-                17 mai ⚽ & 7 juin 🔥
-              </div>
+              <div className="rounded-2xl border border-blue-400/30 bg-blue-600 px-8 py-5 text-center text-3xl font-extrabold text-white shadow-lg">
+  🍖 7 juin 🔥
+</div>
             </div>
           </motion.div>
         </div>
@@ -557,7 +556,7 @@ Paiement effectué via ${form.paymentMethod} 👊🏾`
             </div>
 
             <p className="mt-5 text-lg leading-8 text-white/70">
-              Le 17 mai, on représente le 2Zéro sur le terrain.
+              On représente le 2Zéro sur le terrain.
               <br />
               Le 7 juin, on célèbre ça tous ensemble autour d’un grand barbecue
               familial 🔥
