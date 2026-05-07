@@ -280,11 +280,13 @@ Paiement effectué via PayPal 👊🏾`
   onChange={(e) =>
     setForm({ ...form, bbqPresence: e.target.value })
   }
+  className="w-full rounded-xl border border-white/10 bg-black px-4 py-4 text-white outline-none"
 >
-    <option>Oui</option>
-    <option>Non</option>
-    <option>A confirmer</option>
-  </select>
+  <option value="">Sélectionner</option>
+  <option value="Oui">Oui</option>
+  <option value="Non">Non</option>
+  <option value="A confirmer">A confirmer</option>
+</select>
 </div>
             {/* PEOPLE */}
             {/* GUESTS */}
