@@ -145,17 +145,19 @@ const handleReservationClick = async () => {
   setSubmitted(true);
 };
   const whatsappMessage = encodeURIComponent(
-    `🔥 Contribution 2Zéro 🔥
+`🔥 Contribution 2Zéro 🔥
 
 Nom : ${form.name}
-Email : ${form.email}
-Nombre de personnes: ${form.peopleCount}
+Présence au barbecue : ${form.bbqPresence}
+Nombre d'adultes : ${form.adultCount}
+Nombre d'enfants : ${form.childrenCount}
 Montant : ${total} €
 
-Message : ${form.message}
+Message :
+${form.message || "-"}
 
-Paiement effectué via PayPal 👊🏾`
-  );
+Paiement effectué via ${form.paymentMethod} 👊🏾`
+);
 
   return (
     <main className="min-h-screen bg-black text-white">
@@ -241,6 +243,7 @@ Paiement effectué via PayPal 👊🏾`
               </label>
 
               <input
+                required
                 type="text"
                 placeholder="Ex : Ivanol petit de Grevy"
                 className="w-full bg-transparent text-lg outline-none"
@@ -449,6 +452,10 @@ Paiement effectué via PayPal 👊🏾`
       >
         Confirmer aussi par WhatsApp
       </a>
+      <p className="mt-3 text-center text-xs text-white/50">
+  Merci de confirmer auprès de la direction du FC 2zéro Paris
+  ou du comité d'organisation.
+</p>
     </>
   )}
 </div>
