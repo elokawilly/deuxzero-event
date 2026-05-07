@@ -28,6 +28,25 @@ export default function DeuxZeroEventSite() {
 });
 
   const total = useMemo(() => {
+    const sendEmailNotification = async () => {
+  const formData = new FormData();
+
+  formData.append("Nom", form.name);
+  formData.append("Email", form.email);
+  formData.append("Montant", `${total} €`);
+  formData.append("Présence au barbecue", form.bbqPresence);
+  formData.append("Nombre d'adultes", String(form.adultCount));
+  formData.append("Nombre d'enfants", String(form.childrenCount));
+  formData.append("Moyen de paiement", form.paymentMethod);
+  formData.append("Message", form.message);
+  formData.append("_subject", "Mise à jour formulaire 2Zéro");
+  formData.append("_captcha", "false");
+
+  await fetch("https://formsubmit.co/ajax/willyserge237@gmail.com", {
+    method: "POST",
+    body: formData,
+  });
+};
   return Number(form.amount || 0);
 }, [form.amount]);
 
@@ -65,17 +84,43 @@ const sendNotification = () => {
   setSubmitted(true);
   return true;
 };
-
-const handlePaypalClick = () => {
-  const ok = sendNotification();
-
-  if (ok) {
-    window.open(paypalLink, "_blank", "noopener,noreferrer");
+const sendEmailNotification = async () => {
+  try {
+    await fetch("/api/send-notification", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        name: form.name,
+        email: form.email,
+        peopleCount: form.peopleCount,
+        total,
+        message: form.message,
+      }),
+    });
+  } catch (error) {
+    console.error("Erreur notification :", error);
   }
 };
+const handlePaypalClick = async () => {
+  if (!form.name || !form.email) {
+    alert("Merci de renseigner votre nom et votre email.");
+    return;
+  }
 
-const handleReservationClick = () => {
-  sendNotification();
+  await sendEmailNotification();
+  setSubmitted(true);
+  window.open(paypalLink, "_blank", "noopener,noreferrer");
+};
+
+const handleReservationClick = async () => {
+  await sendEmailNotification();
+
+  window.open(
+    `https://wa.me/?text=${whatsappMessage}`,
+    "_blank"
+  );
 };
   const whatsappMessage = encodeURIComponent(
     `🔥 Contribution 2Zéro 🔥
@@ -370,6 +415,7 @@ Paiement effectué via PayPal 👊🏾`
         href={`https://wa.me/?text=${whatsappMessage}`}
         target="_blank"
         rel="noopener noreferrer"
+        onClick={handleReservationClick}
         className="flex w-full items-center justify-center gap-3 rounded-2xl border border-white/10 bg-white/10 px-6 py-4 text-lg font-bold text-white transition hover:bg-white/20"
       >
         Confirmer aussi par WhatsApp
