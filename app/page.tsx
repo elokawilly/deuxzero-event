@@ -108,6 +108,11 @@ const sendEmailNotification = async () => {
 };
 const handlePaypalClick = async () => {
 
+  if (!form.name.trim()) {
+  alert("Veuillez renseigner votre nom complet.");
+  return;
+}
+
   if (
     form.bbqPresence === "Oui" &&
     form.adultCount === 0
@@ -126,7 +131,10 @@ const handlePaypalClick = async () => {
 };
 
 const handleReservationClick = async () => {
-
+if (!form.name.trim()) {
+  alert("Veuillez renseigner votre nom complet.");
+  return;
+}
   console.log(form.bbqPresence);
   console.log(form.adultCount);
 
