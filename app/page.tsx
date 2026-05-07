@@ -107,23 +107,42 @@ const sendEmailNotification = async () => {
   }
 };
 const handlePaypalClick = async () => {
-  if (!form.name || !form.email) {
-    alert("Merci de renseigner votre nom et votre email.");
+
+  if (
+    form.bbqPresence === "Oui" &&
+    form.adultCount === 0
+  ) {
+    alert(
+      "Veuillez sélectionner au moins 1 adulte pour le barbecue."
+    );
     return;
   }
 
   await sendEmailNotification();
+
   setSubmitted(true);
+
   window.open(paypalLink, "_blank", "noopener,noreferrer");
 };
 
 const handleReservationClick = async () => {
+
+  console.log(form.bbqPresence);
+  console.log(form.adultCount);
+
+  if (
+    form.bbqPresence === "Oui" &&
+    form.adultCount === 0
+  ) {
+    alert(
+      "Veuillez sélectionner au moins 1 adulte pour le barbecue."
+    );
+    return;
+  }
+
   await sendEmailNotification();
 
-  window.open(
-    `https://wa.me/?text=${whatsappMessage}`,
-    "_blank"
-  );
+  setSubmitted(true);
 };
   const whatsappMessage = encodeURIComponent(
     `🔥 Contribution 2Zéro 🔥
@@ -193,25 +212,26 @@ Paiement effectué via PayPal 👊🏾`
           className="rounded-3xl border border-white/10 bg-neutral-900 p-6 md:p-8"
         >
           <div className="mb-8">
-            <p className="mt-6 text-lg text-white/70 md:text-xl">
+  <p className="text-sm uppercase tracking-[0.4em] text-orange-300">
+    Contribution
+  </p>
+
+  <h2 className="mt-2 text-5xl font-black md:text-7xl">
+    30 € <span className="text-3xl md:text-5xl">par personne</span>
+  </h2>
+</div>
+
+<p className="mt-6 text-lg text-white/70 md:text-xl">
   La contribution couvre l’organisation des deux événements :
   accueil du match, nourriture, boissons, matériel, logistique BBQ.
-
-  <br />
-  <br />
-
-  <strong>
-    À noter :
-    <br />
-    30€ = 1 membre + 1 invité
-    <br />
-    Pour tout invité supplémentaire : +5€
-    <br />
-    Pas de limitation pour les enfants.
-  </strong>
 </p>
-          </div>
 
+<div className="mt-14 mb-10 text-sm font-semibold text-white/85 md:text-base">
+  <p>À noter :</p>
+  <p>30€ = 1 membre + 1 invité</p>
+  <p>Pour tout invité supplémentaire : +5€</p>
+  <p>Pas de limitation pour les enfants.</p>
+</div>
           <div className="space-y-5">
             {/* NAME */}
             <div className="rounded-2xl border border-white/10 bg-black/40 p-4">
@@ -255,12 +275,12 @@ Paiement effectué via PayPal 👊🏾`
   </label>
 
   <select
-    className="w-full bg-black text-sm md:text-base outline-none"
-    value={form.bbqPresence}
-    onChange={(e) =>
-      setForm({ ...form, bbqPresence: e.target.value })
-    }
-  >
+  required
+  value={form.bbqPresence}
+  onChange={(e) =>
+    setForm({ ...form, bbqPresence: e.target.value })
+  }
+>
     <option>Oui</option>
     <option>Non</option>
     <option>A confirmer</option>
@@ -550,7 +570,15 @@ Paiement effectué via PayPal 👊🏾`
   />
 </div>
 </div>
-
+<div className="mt-4 flex justify-center">
+  <Image
+    src="/image-viande.png"
+    alt="Viande barbecue"
+    width={420}
+    height={260}
+    className="rounded-2xl object-cover"
+  />
+</div>
         </motion.div>
       </section>
 
