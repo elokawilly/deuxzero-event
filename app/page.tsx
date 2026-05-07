@@ -59,7 +59,7 @@ const [submitted, setSubmitted] = useState(false);
 const notificationMessage = `
 Monsieur ${form.name} a effectué une mise à jour du formulaire.
 
-Le montant de sa participation est : ${total} €
+Le montant à percevoir : ${total} €
 Présence au barbecue : ${form.bbqPresence}
 Nombre d'adultes : ${form.adultCount}
 Nombre d'enfants : ${form.childrenCount}
