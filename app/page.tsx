@@ -445,7 +445,6 @@ Paiement effectué via PayPal 👊🏾`
         href={`https://wa.me/?text=${whatsappMessage}`}
         target="_blank"
         rel="noopener noreferrer"
-        onClick={handleReservationClick}
         className="flex w-full items-center justify-center gap-3 rounded-2xl border border-white/10 bg-white/10 px-6 py-4 text-lg font-bold text-white transition hover:bg-white/20"
       >
         Confirmer aussi par WhatsApp
