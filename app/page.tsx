@@ -101,8 +101,7 @@ Paiement effectué via PayPal 👊🏾`
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7 }}
-            className="max-w-4xl"
-          >
+            className="mx-auto flex max-w-4xl flex-col items-center text-center"          >
             <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-orange-500/30 bg-orange-500/10 px-4 py-2 text-sm text-orange-300">
               <Trophy className="h-4 w-4" />
               FC 2Zéro Paris
@@ -116,7 +115,7 @@ Paiement effectué via PayPal 👊🏾`
               ambiance autour du 2Zéro 👊🏾🔥
             </p>
 
-            <div className="mt-10 flex flex-wrap gap-4">
+            <div className="mt-10 flex flex-wrap justify-center gap-4">
               <a
                 href="#participer"
                 className="rounded-2xl bg-orange-500 px-8 py-4 font-semibold text-white transition hover:bg-orange-400"
@@ -388,7 +387,7 @@ Paiement effectué via PayPal 👊🏾`
           viewport={{ once: true }}
         >
           
-            <div className="flex justify-center lg:justify-center">
+            <div className="mb-10 flex justify-center lg:justify-center">
   <Image
     src="/logo-fc2zero.png"
     alt="Logo FC 2Zéro Paris"
@@ -398,7 +397,6 @@ Paiement effectué via PayPal 👊🏾`
     priority
   />
 </div>
-
           <div className="rounded-3xl border border-white/10 bg-neutral-900 p-6 md:p-8">
             <h3 className="text-2xl font-black">
               Ce que finance la contribution
@@ -488,6 +486,15 @@ Paiement effectué via PayPal 👊🏾`
   >
     Voir le suivi des contributions
   </a>
+  <div className="mt-8 flex justify-center">
+  <Image
+    src="/image-match-bbq.png"
+    alt="Match et barbecue FC 2Zéro"
+    width={750}
+    height={430}
+    className="w-full max-w-3xl rounded-2xl object-cover"
+  />
+</div>
 </div>
 
         </motion.div>
