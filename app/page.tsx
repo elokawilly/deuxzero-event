@@ -184,7 +184,7 @@ Paiement effectué via ${form.paymentMethod} 👊🏾`
               FC 2Zéro Paris
             </div>
             <h1 className="text-5xl font-black leading-tight md:text-7xl">
-              Barbecue Géant & Familiale
+              Barbecue Géant & Familial
             </h1>
 
             <p className="mt-6 max-w-2xl text-lg text-white/70 md:text-xl">
