@@ -1,4 +1,5 @@
 "use client";
+import Image from "next/image";
 
 import React, { useMemo, useState } from "react";
 import { motion } from "framer-motion";
@@ -106,7 +107,6 @@ Paiement effectué via PayPal 👊🏾`
               <Trophy className="h-4 w-4" />
               FC 2Zéro Paris
             </div>
-
             <h1 className="text-5xl font-black leading-tight md:text-7xl">
               Match Amical & BBQ
             </h1>
@@ -387,6 +387,18 @@ Paiement effectué via PayPal 👊🏾`
           transition={{ duration: 0.6 }}
           viewport={{ once: true }}
         >
+          
+            <div className="flex justify-center lg:justify-center">
+  <Image
+    src="/logo-fc2zero.png"
+    alt="Logo FC 2Zéro Paris"
+    width={170}
+    height={170}
+    className="object-contain"
+    priority
+  />
+</div>
+
           <div className="rounded-3xl border border-white/10 bg-neutral-900 p-6 md:p-8">
             <h3 className="text-2xl font-black">
               Ce que finance la contribution
