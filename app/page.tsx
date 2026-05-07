@@ -193,18 +193,23 @@ Paiement effectué via PayPal 👊🏾`
           className="rounded-3xl border border-white/10 bg-neutral-900 p-6 md:p-8"
         >
           <div className="mb-8">
-            <p className="text-sm uppercase tracking-[0.3em] text-orange-300">
-              Contribution
-            </p>
+            <p className="mt-6 text-lg text-white/70 md:text-xl">
+  La contribution couvre l’organisation des deux événements :
+  accueil du match, nourriture, boissons, matériel, logistique BBQ.
 
-            <h2 className="mt-2 text-5xl font-black">
-              30 € <span className="text-3xl">par personne</span>
-            </h2>
+  <br />
+  <br />
 
-            <p className="mt-4 text-white/70">
-              La contribution couvre l’organisation des deux événements :
-              accueil du match, nourriture, boissons, matériel, logistique BBQ.
-            </p>
+  <strong>
+    À noter :
+    <br />
+    30€ = 1 membre + 1 invité
+    <br />
+    Pour tout invité supplémentaire : +5€
+    <br />
+    Pas de limitation pour les enfants.
+  </strong>
+</p>
           </div>
 
           <div className="space-y-5">
