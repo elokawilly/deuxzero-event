@@ -9,7 +9,7 @@ export async function POST(req: Request) {
     await resend.emails.send({
       from: "FC 2Zéro <onboarding@resend.dev>",
       to: "eloka.willy@gmail.com",
-      subject: "Mise à jour formulaire 2Zéro",
+      subject: `2Zéro • ${data.name} • ${data.total}€`,
       text: `
 Monsieur ${data.name} a effectué une mise à jour du formulaire.
 
