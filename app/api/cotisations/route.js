@@ -3,7 +3,12 @@ import { NextResponse } from "next/server";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-const allowedActions = new Set(["lookup", "register", "balance"]);
+const allowedActions = new Set([
+  "requestCode",
+  "verifyCode",
+  "profile",
+  "enroll",
+]);
 
 export async function POST(request) {
   try {
@@ -43,7 +48,7 @@ export async function POST(request) {
       upstream = await fetch(url, {
         method: "POST",
         headers: { "Content-Type": "text/plain;charset=utf-8" },
-        body: JSON.stringify({ action, ...payload, apiSecret: secret }),
+        body: JSON.stringify({ action, ...payload, secret }),
         redirect: "follow",
         cache: "no-store",
         signal: controller.signal,
