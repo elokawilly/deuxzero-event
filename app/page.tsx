@@ -18,7 +18,8 @@ type Profile = {
 };
 
 // À renseigner seulement après confirmation du compte PayPal officiel de l'association.
-const ASSOCIATION_PAYPAL_URL = "";
+const ASSOCIATION_PAYPAL_URL: string =
+  process.env.NEXT_PUBLIC_ASSOCIATION_PAYPAL_URL ?? "";
 const amountFor = (f: Formula) => (f === "hotel" ? 150 : 100);
 const euro = (n: number) => new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR" }).format(n);
 
