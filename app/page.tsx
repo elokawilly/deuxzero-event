@@ -1,3 +1,67 @@
+"use client";
+
+import Image from "next/image";
+import { useState } from "react";
+import { CheckCircle2, CreditCard, Mail, RefreshCw, ShieldCheck, Trophy } from "lucide-react";
+
+type Formula = "transport" | "hotel";
+type Payment = { date?: string; amount?: number; reference?: string };
+type Profile = {
+  registered?: boolean;
+  name?: string;
+  email?: string;
+  formula?: string;
+  total?: number;
+  paid?: number;
+  balance?: number;
+  payments?: Payment[];
+};
+
+// À renseigner seulement après confirmation du compte PayPal officiel de l'association.
+const ASSOCIATION_PAYPAL_URL = "";
+const amountFor = (f: Formula) => (f === "hotel" ? 150 : 100);
+const euro = (n: number) => new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR" }).format(n);
+
+async function api(action: string, data: Record<string, unknown> = {}) {
+  const response = await fetch("/api/cotisations", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    cache: "no-store",
+    body: JSON.stringify({ action, ...data }),
+  });
+  const result = await response.json().catch(() => ({}));
+  if (!response.ok || result.ok === false || result.error) {
+    throw new Error(result.error || `Erreur du serveur (${response.status})`);
+  }
+  return result;
+}
+
+export default function DeuxZeroEventSite() {
+  const [email, setEmail] = useState("");
+  const [code, setCode] = useState("");
+  const [token, setToken] = useState("");
+  const [step, setStep] = useState<"email" | "code" | "member">("email");
+  const [name, setName] = useState("");
+  const [formula, setFormula] = useState<Formula>("transport");
+  const [profile, setProfile] = useState<Profile | null>(null);
+  const [amount, setAmount] = useState(25);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [notice, setNotice] = useState("");
+
+  async function run(task: () => Promise<void>) {
+    setError("");
+    setNotice("");
+    setLoading(true);
+    try { await task(); }
+    catch (e) { setError(e instanceof Error ? e.message : "Une erreur est survenue."); }
+    finally { setLoading(false); }
+  }
+
+  function loadProfile(data: Profile) {
+    setProfile(data);
+    if (data.name) setName(data.name);
+    if (data.formula) setFormula(data.formula.toLowerCase().includes("hébergement") ? "hotel" : "transport");
   }
 
   const requestCode = () => run(async () => {
