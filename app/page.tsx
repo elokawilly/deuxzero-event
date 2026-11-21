@@ -5,6 +5,7 @@ import { useState } from "react";
 import { CheckCircle2, CreditCard, Mail, RefreshCw, ShieldCheck, Trophy } from "lucide-react";
 
 type Formula = "transport" | "hotel";
+type PaymentMethod = "especes" | "virement" | "paypal";
 type Payment = { date?: string; amount?: number; reference?: string };
 type Profile = {
   registered?: boolean;
@@ -17,9 +18,9 @@ type Profile = {
   payments?: Payment[];
 };
 
-// À renseigner seulement après confirmation du compte PayPal officiel de l'association.
-const ASSOCIATION_PAYPAL_URL: string =
-  process.env.NEXT_PUBLIC_ASSOCIATION_PAYPAL_URL ?? "";
+// Lien PayPal confirmé pour les cotisations FC 2Zéro.
+const ASSOCIATION_PAYPAL_URL: string = "https://paypal.me/willyeloka";
+const ADMIN_SHEET_URL = process.env.NEXT_PUBLIC_ADMIN_SHEET_URL ?? "";
 const amountFor = (f: Formula) => (f === "hotel" ? 150 : 100);
 const euro = (n: number) => new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR" }).format(n);
 
@@ -46,6 +47,7 @@ export default function DeuxZeroEventSite() {
   const [formula, setFormula] = useState<Formula>("transport");
   const [profile, setProfile] = useState<Profile | null>(null);
   const [amount, setAmount] = useState(25);
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("especes");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
@@ -97,6 +99,22 @@ export default function DeuxZeroEventSite() {
     const data = await api("profile", { token });
     loadProfile(data);
     setNotice("Inscription enregistrée. Tu peux maintenant consulter ton solde.");
+  });
+
+  const declarePayment = () => run(async () => {
+    if (!validAmount) throw new Error("Le montant saisi n’est pas valide.");
+    if (paymentMethod === "paypal" && !paypalUrl) {
+      throw new Error("Le compte PayPal officiel n’est pas encore configuré.");
+    }
+    // Cette action doit enregistrer une déclaration EN ATTENTE dans Google Sheets.
+    // Elle ne doit JAMAIS augmenter le montant payé ni diminuer le solde.
+    await api("declarePayment", { token, amount, paymentMethod });
+    setNotice(paymentMethod === "paypal"
+      ? "Déclaration enregistrée en attente. PayPal va s’ouvrir ; le paiement devra être confirmé par l’administrateur."
+      : "Déclaration enregistrée en attente. Le solde sera actualisé après confirmation de l’administrateur.");
+    if (paymentMethod === "paypal") {
+      window.location.assign(paypalUrl);
+    }
   });
 
   const total = Number(profile?.total ?? amountFor(formula));
@@ -164,7 +182,29 @@ export default function DeuxZeroEventSite() {
               <div className="flex items-start justify-between gap-3"><div><p className="text-sm text-green-300"><CheckCircle2 size={16} className="mr-2 inline" /> Membre inscrit</p><h3 className="mt-2 text-xl font-bold">{profile.name}</h3><p className="mt-1 break-all text-sm text-white/50">{email}</p><p className="mt-2 text-sm text-orange-300">{profile.formula}</p></div><button type="button" disabled={loading} onClick={refresh} title="Actualiser" className="rounded-xl border border-white/15 p-3 hover:bg-white/10"><RefreshCw size={18} /></button></div>
               <div className="grid grid-cols-3 gap-2 text-center"><div className="rounded-xl bg-black p-3"><p className="text-xs text-white/50">Total</p><strong className="mt-1 block text-lg">{euro(total)}</strong></div><div className="rounded-xl bg-black p-3"><p className="text-xs text-white/50">Versé</p><strong className="mt-1 block text-lg text-green-300">{euro(paid)}</strong></div><div className="rounded-xl bg-black p-3"><p className="text-xs text-white/50">Solde</p><strong className="mt-1 block text-lg text-orange-300">{euro(balance)}</strong></div></div>
               <div><div className="mb-2 flex justify-between text-sm"><span>Progression</span><span>{progress} %</span></div><div className="h-3 overflow-hidden rounded-full bg-white/10"><div className="h-full rounded-full bg-green-500" style={{ width: `${progress}%` }} /></div></div>
-              {balance > 0 ? <div className="space-y-3 rounded-xl border border-white/10 bg-black/40 p-4"><label htmlFor="amount" className="block text-sm text-white/70">Montant du prochain versement (€)</label><input id="amount" type="number" min={balance < 25 ? balance : 25} max={balance} step="0.01" value={amount} onChange={e => setAmount(Number(e.target.value))} className="w-full rounded-xl border border-white/15 bg-black p-3" /><p className="text-xs text-white/50">Versement minimum de 25 €, sauf pour régler un solde inférieur à 25 €.</p>{!validAmount && <p className="text-xs text-orange-300">Choisis un montant valide, sans dépasser le solde.</p>}{paypalUrl ? <a href={validAmount ? paypalUrl : undefined} target="_blank" rel="noopener noreferrer" aria-disabled={!validAmount} className={`flex items-center justify-center gap-2 rounded-xl p-4 font-bold ${validAmount ? "bg-orange-500 hover:bg-orange-400" : "pointer-events-none bg-neutral-700 opacity-50"}`}><CreditCard size={18} /> Continuer vers PayPal</a> : <p className="rounded-xl border border-orange-500/30 bg-orange-500/10 p-3 text-sm text-orange-200">Le lien PayPal officiel de l’association n’est pas encore configuré. Contacte le trésorier pour effectuer ton versement.</p>}<p className="text-xs text-white/50">Le paiement ne sera comptabilisé qu’après validation par le trésorier.</p></div> : <p className="rounded-xl bg-green-950/40 p-4 font-semibold text-green-300">🎉 Cotisation intégralement réglée !</p>}
+              {balance > 0 ? (
+                <form onSubmit={e => { e.preventDefault(); declarePayment(); }} className="space-y-4 rounded-xl border border-white/10 bg-black/40 p-4">
+                  <label htmlFor="amount" className="block text-sm text-white/70">Montant du versement à déclarer (€)</label>
+                  <input id="amount" type="number" min={balance < 25 ? balance : 25} max={balance} step="0.01" value={amount} onChange={e => setAmount(Number(e.target.value))} className="w-full rounded-xl border border-white/15 bg-black p-3" />
+                  <p className="text-xs text-white/50">Minimum 25 €, sauf pour régler un solde inférieur à 25 €.</p>
+                  <fieldset className="space-y-2">
+                    <legend className="mb-2 text-sm font-semibold">Moyen de paiement</legend>
+                    {([ ["especes", "Espèces"], ["virement", "Virement"], ["paypal", "PayPal"] ] as const).map(([value, label]) => (
+                      <label key={value} className={`flex cursor-pointer items-center gap-3 rounded-xl border p-3 ${paymentMethod === value ? "border-orange-500 bg-orange-500/10" : "border-white/15"}`}>
+                        <input type="radio" name="paymentMethod" checked={paymentMethod === value} onChange={() => setPaymentMethod(value)} />
+                        {label}
+                      </label>
+                    ))}
+                  </fieldset>
+                  {paymentMethod === "paypal" && !paypalUrl && <p className="rounded-xl border border-orange-500/30 bg-orange-500/10 p-3 text-sm text-orange-200">Le lien PayPal officiel n’est pas encore configuré.</p>}
+                  <p className="text-sm text-white/60">{paymentMethod === "paypal" ? "Après validation, tu seras redirigé vers PayPal. Le versement restera en attente de confirmation administrative." : "Cette déclaration est indicative. Aucun IBAN n’est affiché et ton solde ne changera qu’après confirmation de réception par l’administrateur dans Google Sheets."}</p>
+                  {!validAmount && <p className="text-sm text-orange-300">Choisis un montant valide sans dépasser le solde.</p>}
+                  <button type="submit" disabled={loading || !validAmount || (paymentMethod === "paypal" && !paypalUrl)} className="flex w-full items-center justify-center gap-2 rounded-xl bg-orange-500 p-4 font-bold hover:bg-orange-400 disabled:cursor-not-allowed disabled:opacity-50">
+                    <CreditCard size={18} /> {loading ? "Enregistrement…" : paymentMethod === "paypal" ? "Valider et continuer vers PayPal" : "Déclarer mon versement"}
+                  </button>
+                </form>
+              ) : <p className="rounded-xl bg-green-950/40 p-4 font-semibold text-green-300">🎉 Cotisation intégralement réglée !</p>}
+              {ADMIN_SHEET_URL && <div className="rounded-xl border border-white/10 p-3 text-sm"><p className="mb-2 text-white/50">Accès administrateur uniquement (droits Google requis)</p><a href={ADMIN_SHEET_URL} target="_blank" rel="noopener noreferrer" className="text-orange-300 underline">Ouvrir le tableau Google Sheets de validation</a></div>}
               <div><h4 className="mb-3 font-bold">Historique des versements validés</h4>{Array.isArray(profile.payments) && profile.payments.length > 0 ? <div className="space-y-2">{profile.payments.map((p, i) => <div key={`${p.reference || "versement"}-${i}`} className="flex items-center justify-between gap-3 rounded-xl border border-white/10 p-3 text-sm"><div><p>{p.date ? new Date(p.date).toLocaleDateString("fr-FR") : "Date non précisée"}</p>{p.reference && <p className="mt-1 break-all text-xs text-white/50">Réf. {p.reference}</p>}</div><strong className="text-green-300">{euro(Number(p.amount || 0))}</strong></div>)}</div> : <p className="text-sm text-white/50">Aucun versement validé pour le moment.</p>}</div>
               <button type="button" onClick={() => { setToken(""); setCode(""); setProfile(null); setStep("email"); }} className="text-sm text-white/50 underline">Se déconnecter</button>
             </div>
@@ -173,7 +213,7 @@ export default function DeuxZeroEventSite() {
 
         <aside className="space-y-6">
           <div className="flex justify-center"><Image src="/logo-fc2zero.png" alt="Logo FC 2Zéro Paris" width={170} height={170} priority className="object-contain" /></div>
-          <div className="rounded-3xl border border-white/10 bg-neutral-900 p-6 md:p-8"><h2 className="text-2xl font-black">Deux formules au choix</h2><div className="mt-6 space-y-4"><div className="rounded-2xl border border-orange-500/30 bg-orange-500/10 p-5"><p className="text-lg font-semibold">🚌 Transport uniquement</p><p className="mt-2 text-4xl font-black">100 €</p></div><div className="rounded-2xl border border-white/15 p-5"><p className="text-lg font-semibold">🚌 🏨 Transport + hébergement</p><p className="mt-2 text-4xl font-black">150 €</p><p className="mt-1 text-sm text-white/60">100 € de transport + 50 € d’hébergement</p></div></div><div className="mt-6 rounded-2xl bg-white/5 p-5"><h3 className="font-bold">Comment ça marche ?</h3><p className="mt-3 leading-7 text-white/70">1. Vérifie ton email et inscris-toi.<br />2. Choisis ta formule.<br />3. Effectue tes versements, à partir de 25 €.<br />4. Retrouve automatiquement les montants validés et ton solde.</p></div><p className="mt-5 text-sm text-white/50">Objectif : constituer les cotisations dès janvier–février 2027, en préparation du déplacement de mai 2027.</p></div>
+          <div className="rounded-3xl border border-white/10 bg-neutral-900 p-6 md:p-8"><h2 className="text-2xl font-black">Deux formules au choix</h2><div className="mt-6 space-y-4"><div className="rounded-2xl border border-orange-500/30 bg-orange-500/10 p-5"><p className="text-lg font-semibold">🚌 Transport uniquement</p><p className="mt-2 text-4xl font-black">100 €</p></div><div className="rounded-2xl border border-white/15 p-5"><p className="text-lg font-semibold">🚌 🏨 Transport + hébergement</p><p className="mt-2 text-4xl font-black">150 €</p><p className="mt-1 text-sm text-white/60">100 € de transport + 50 € d’hébergement</p></div></div><div className="mt-6 rounded-2xl bg-white/5 p-5"><h3 className="font-bold">Comment ça marche ?</h3><p className="mt-3 leading-7 text-white/70">1. Vérifie ton email et inscris-toi.<br />2. Choisis ta formule.<br />3. Déclare ton versement en espèces, par virement ou via PayPal.<br />4. L’administrateur confirme la réception dans Google Sheets.<br />5. Ton solde est alors actualisé.</p></div><p className="mt-5 text-sm text-white/50">Objectif : constituer les cotisations dès janvier–février 2027, en préparation du déplacement de mai 2027.</p></div>
         </aside>
       </section>
       <footer className="border-t border-white/10 px-5 py-8 text-center text-sm text-neutral-500">FC 2Zéro Paris — Ensemble sur le terrain, ensemble en famille.</footer>
