@@ -8,6 +8,7 @@ const allowedActions = new Set([
   "verifyCode",
   "profile",
   "enroll",
+  "declarePayment",
 ]);
 
 export async function POST(request) {
