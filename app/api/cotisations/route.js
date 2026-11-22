@@ -3,14 +3,14 @@ import { NextResponse } from "next/server";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-const allowedActions = new Set([
+const allowedActions = [
   "requestCode",
   "verifyCode",
   "profile",
   "enroll",
   "declarePayment",
-]);
-
+  "decideSurplus"
+];
 export async function POST(request) {
   try {
     const url = process.env.GAS_WEB_APP_URL;
