@@ -38,7 +38,7 @@ export async function POST(request) {
       return NextResponse.json({ error: "Format de requête invalide." }, { status: 400 });
     }
     const { action, ...payload } = body;
-    if (typeof action !== "string" || !allowedActions.has(action)) {
+    if (typeof action !== "string" || !allowedActions.includes(action)) {
       return NextResponse.json({ error: "Action non autorisée." }, { status: 400 });
     }
 
