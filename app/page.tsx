@@ -37,7 +37,7 @@ async function api(action: string, data: Record<string, unknown> = {}) {
   });
   const result = await response.json().catch(() => ({}));
   if (!response.ok || result.ok === false || result.error) {
-    throw new Error(result.error || `Erreur du serveur (${response.status})`);
+    throw new Error(result.error || "Erreur du serveur : " + response.status);
   }
   return result;
 }
