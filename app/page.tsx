@@ -141,9 +141,7 @@ export default function DeuxZeroEventSite() {
   const validAmount = Number.isInteger(amount) && amount > 0 && amount % 25 === 0 && amount <= balance;
   const surplus = Math.max(0, Number(profile?.surplus ?? 0));
   const surplusDecision = profile?.surplusDecision ?? "Aucun";
-  const paypalUrl = ASSOCIATION_PAYPAL_URL
-    ? `${ASSOCIATION_PAYPAL_URL.replace(/\/$/, "")}/${amount}`
-    : "";
+  const paypalUrl = ASSOCIATION_PAYPAL_URL.replace(/\/$/, "") + "/" + amount;
 
   return (
     <main className="min-h-screen bg-black text-white">
