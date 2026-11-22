@@ -1,3 +1,4 @@
+```
 "use client";
 
 import Image from "next/image";
@@ -15,6 +16,9 @@ type Profile = {
   total?: number;
   paid?: number;
   balance?: number;
+  surplus?: number;
+  surplusDecision?: "Aucun" | "En attente" | "Accepté" | "Refusé";
+  donationAmount?: number;
   payments?: Payment[];
 };
 
@@ -48,6 +52,7 @@ export default function DeuxZeroEventSite() {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [amount, setAmount] = useState(25);
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("especes");
+  const [surplusChoice, setSurplusChoice] = useState<"accept" | "refuse" | "">("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
@@ -115,11 +120,27 @@ export default function DeuxZeroEventSite() {
     setNotice("Déclaration enregistrée. Un récapitulatif a été demandé par e-mail pour toi et une notification pour l'administrateur. Ton solde reste inchangé jusqu'à validation.");
   });
 
+  const decideSurplus = () => run(async () => {
+    if (!surplusChoice) throw new Error("Choisis d’abord si tu acceptes le don ou demandes une régularisation.");
+    if (Number(profile?.surplus ?? 0) <= 0 || profile?.surplusDecision !== "En attente") {
+      throw new Error("Aucun excédent en attente de décision.");
+    }
+    const result = await api("decideSurplus", { token, choice: surplusChoice });
+    const data = await api("profile", { token });
+    loadProfile(data);
+    setSurplusChoice("");
+    setNotice(result.status === "Accepté"
+      ? "Merci ! Ton accord pour le don a été enregistré."
+      : "Ta demande de régularisation a été enregistrée et transmise à l’administrateur.");
+  });
+
   const total = Number(profile?.total ?? amountFor(formula));
   const paid = Number(profile?.paid ?? 0);
   const balance = Math.max(0, Number(profile?.balance ?? total - paid));
   const progress = total > 0 ? Math.min(100, Math.round((paid / total) * 100)) : 0;
-  const validAmount = Number.isFinite(amount) && amount > 0 && amount <= balance && (amount >= 25 || amount === balance);
+  const validAmount = Number.isInteger(amount) && amount > 0 && amount % 25 === 0 && amount <= balance;
+  const surplus = Math.max(0, Number(profile?.surplus ?? 0));
+  const surplusDecision = profile?.surplusDecision ?? "Aucun";
   const paypalUrl = ASSOCIATION_PAYPAL_URL
     ? `${ASSOCIATION_PAYPAL_URL.replace(/\/$/, "")}/${amount}`
     : "";
@@ -180,6 +201,38 @@ export default function DeuxZeroEventSite() {
               <div className="flex items-start justify-between gap-3"><div><p className="text-sm text-green-300"><CheckCircle2 size={16} className="mr-2 inline" /> Membre inscrit</p><h3 className="mt-2 text-xl font-bold">{profile.name}</h3><p className="mt-1 break-all text-sm text-white/50">{email}</p><p className="mt-2 text-sm text-orange-300">{profile.formula}</p></div><button type="button" disabled={loading} onClick={refresh} title="Actualiser" className="rounded-xl border border-white/15 p-3 hover:bg-white/10"><RefreshCw size={18} /></button></div>
               <div className="grid grid-cols-3 gap-2 text-center"><div className="rounded-xl bg-black p-3"><p className="text-xs text-white/50">Total</p><strong className="mt-1 block text-lg">{euro(total)}</strong></div><div className="rounded-xl bg-black p-3"><p className="text-xs text-white/50">Versé</p><strong className="mt-1 block text-lg text-green-300">{euro(paid)}</strong></div><div className="rounded-xl bg-black p-3"><p className="text-xs text-white/50">Solde</p><strong className="mt-1 block text-lg text-orange-300">{euro(balance)}</strong></div></div>
               <div><div className="mb-2 flex justify-between text-sm"><span>Progression</span><span>{progress} %</span></div><div className="h-3 overflow-hidden rounded-full bg-white/10"><div className="h-full rounded-full bg-green-500" style={{ width: `${progress}%` }} /></div></div>
+               {surplus > 0 && (
+                 <section className="space-y-4 rounded-xl border border-orange-500/40 bg-orange-500/10 p-4" aria-label="Gestion de mon excédent">
+                   <h4 className="font-bold text-orange-200">Excédent de cotisation : {euro(surplus)}</h4>
+                   <p className="text-sm text-white/75">Tu as versé davantage que le montant de ta formule. Cet excédent ne devient un don qu’avec ton accord explicite.</p>
+                   {surplusDecision === "En attente" ? (
+                     <form onSubmit={e => { e.preventDefault(); decideSurplus(); }} className="space-y-3">
+                       <fieldset className="space-y-3">
+                         <legend className="text-sm font-semibold">Que souhaites-tu faire de cet excédent ?</legend>
+                         <label className="flex cursor-pointer gap-3 rounded-lg border border-white/20 p-3 text-sm">
+                           <input type="radio" name="surplusChoice" checked={surplusChoice === "accept"} onChange={() => setSurplusChoice("accept")} />
+                           <span>J’accepte explicitement de faire don de {euro(surplus)} à FC 2Zéro Paris.</span>
+                         </label>
+                         <label className="flex cursor-pointer gap-3 rounded-lg border border-white/20 p-3 text-sm">
+                           <input type="radio" name="surplusChoice" checked={surplusChoice === "refuse"} onChange={() => setSurplusChoice("refuse")} />
+                           <span>Je refuse le don et demande la régularisation de {euro(surplus)} auprès de l’administrateur.</span>
+                         </label>
+                       </fieldset>
+                       <button type="submit" disabled={loading || !surplusChoice} className="w-full rounded-xl bg-orange-500 p-3 font-bold disabled:opacity-50">
+                         {loading ? "Enregistrement…" : "Confirmer mon choix"}
+                       </button>
+                     </form>
+                   ) : (
+                     <p className="rounded-lg border border-white/20 p-3 text-sm" role="status">
+                       {surplusDecision === "Accepté"
+                         ? `Don accepté : ${euro(Number(profile?.donationAmount ?? surplus))}. Merci pour ton soutien !`
+                         : surplusDecision === "Refusé"
+                           ? `Don refusé : demande de régularisation de ${euro(surplus)} transmise à l’administrateur.`
+                           : "Consulte l’administrateur pour le suivi de cet excédent."}
+                     </p>
+                   )}
+                 </section>
+               )}
               {confirmation && (
                 <div role="status" className="rounded-xl border border-green-500/40 bg-green-950/30 p-4 text-sm text-green-100 space-y-2">
                   <p className="font-bold">✓ Déclaration enregistrée — En attente</p>
@@ -190,11 +243,11 @@ export default function DeuxZeroEventSite() {
                   {confirmation.paypal && <a href={`${ASSOCIATION_PAYPAL_URL.replace(/\/$/, "")}/${confirmation.amount}`} target="_blank" rel="noopener noreferrer" className="inline-block rounded-xl bg-orange-500 px-4 py-3 font-bold text-white">Continuer vers PayPal</a>}
                 </div>
               )}
-              {balance > 0 ? (
+               {balance >= 25 ? (
                 <form onSubmit={e => { e.preventDefault(); declarePayment(); }} className="space-y-4 rounded-xl border border-white/10 bg-black/40 p-4">
                   <label htmlFor="amount" className="block text-sm text-white/70">Montant du versement à déclarer (€)</label>
-                  <input id="amount" type="number" min={balance < 25 ? balance : 25} max={balance} step="0.01" value={amount} onChange={e => setAmount(Number(e.target.value))} className="w-full rounded-xl border border-white/15 bg-black p-3" />
-                  <p className="text-xs text-white/50">Minimum 25 €, sauf pour régler un solde inférieur à 25 €.</p>
+                  <input id="amount" type="number" min={25} max={balance} step="25" value={amount} onChange={e => setAmount(Number(e.target.value))} className="w-full rounded-xl border border-white/15 bg-black p-3" />
+                  <p className="text-xs text-white/50">Montants autorisés : 25 €, 50 €, 75 €, etc., sans dépasser le solde restant.</p>
                   <fieldset className="space-y-2">
                     <legend className="mb-2 text-sm font-semibold">Moyen de paiement</legend>
                     {([ ["especes", "Espèces"], ["virement", "Virement"], ["paypal", "PayPal"] ] as const).map(([value, label]) => (
@@ -206,12 +259,14 @@ export default function DeuxZeroEventSite() {
                   </fieldset>
                   {paymentMethod === "paypal" && !paypalUrl && <p className="rounded-xl border border-orange-500/30 bg-orange-500/10 p-3 text-sm text-orange-200">Le lien PayPal officiel n’est pas encore configuré.</p>}
                   <p className="text-sm text-white/60">{paymentMethod === "paypal" ? "Après enregistrement, un message de confirmation et un bouton PayPal apparaîtront. Le versement restera en attente de confirmation administrative." : "Cette déclaration est indicative. Aucun IBAN n’est affiché et ton solde ne changera qu’après confirmation de réception par l’administrateur dans Google Sheets."}</p>
-                  {!validAmount && <p className="text-sm text-orange-300">Choisis un montant valide sans dépasser le solde.</p>}
+                  {!validAmount && <p className="text-sm text-orange-300">Choisis un multiple de 25 € sans dépasser le solde restant.</p>}
                   <button type="submit" disabled={loading || !validAmount || (paymentMethod === "paypal" && !paypalUrl)} className="flex w-full items-center justify-center gap-2 rounded-xl bg-orange-500 p-4 font-bold hover:bg-orange-400 disabled:cursor-not-allowed disabled:opacity-50">
                     <CreditCard size={18} /> {loading ? "Enregistrement…" : paymentMethod === "paypal" ? "Enregistrer et accéder à PayPal" : "Déclarer mon versement"}
                   </button>
                 </form>
-              ) : <p className="rounded-xl bg-green-950/40 p-4 font-semibold text-green-300">🎉 Cotisation intégralement réglée !</p>}
+               ) : balance > 0 ? (
+                 <p className="rounded-xl border border-orange-500/30 bg-orange-500/10 p-4 text-sm text-orange-200">Le solde restant est de {euro(balance)}, inférieur à 25 €. Contacte l’administrateur pour régulariser ce montant : la déclaration en ligne accepte uniquement les multiples de 25 €.</p>
+               ) : <p className="rounded-xl bg-green-950/40 p-4 font-semibold text-green-300">🎉 Cotisation intégralement réglée !</p>}
               {ADMIN_SHEET_URL && <div className="rounded-xl border border-white/10 p-3 text-sm"><p className="mb-2 text-white/50">Accès administrateur uniquement (droits Google requis)</p><a href={ADMIN_SHEET_URL} target="_blank" rel="noopener noreferrer" className="text-orange-300 underline">Ouvrir le tableau Google Sheets de validation</a></div>}
               <div><h4 className="mb-3 font-bold">Historique des versements validés</h4>{Array.isArray(profile.payments) && profile.payments.length > 0 ? <div className="space-y-2">{profile.payments.map((p, i) => <div key={`${p.reference || "versement"}-${i}`} className="flex items-center justify-between gap-3 rounded-xl border border-white/10 p-3 text-sm"><div><p>{p.date ? new Date(p.date).toLocaleDateString("fr-FR") : "Date non précisée"}</p>{p.reference && <p className="mt-1 break-all text-xs text-white/50">Réf. {p.reference}</p>}</div><strong className="text-green-300">{euro(Number(p.amount || 0))}</strong></div>)}</div> : <p className="text-sm text-white/50">Aucun versement validé pour le moment.</p>}</div>
               <button type="button" onClick={() => { setToken(""); setCode(""); setProfile(null); setStep("email"); }} className="text-sm text-white/50 underline">Se déconnecter</button>
@@ -228,3 +283,4 @@ export default function DeuxZeroEventSite() {
     </main>
   );
 }
+```
