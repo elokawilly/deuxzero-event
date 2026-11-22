@@ -1,4 +1,3 @@
-```
 "use client";
 
 import Image from "next/image";
@@ -69,6 +68,7 @@ export default function DeuxZeroEventSite() {
 
   function loadProfile(data: Profile) {
     setProfile(data);
+    setConfirmation(null);
     if (data.name) setName(data.name);
     if (data.formula) setFormula(data.formula.toLowerCase().includes("hébergement") ? "hotel" : "transport");
   }
@@ -166,7 +166,7 @@ export default function DeuxZeroEventSite() {
 
           {step === "email" && (
             <form onSubmit={e => { e.preventDefault(); requestCode(); }} className="mt-7 space-y-4">
-              < htmlFor="email" className="flex items-center gap-2 text-sm text-white/70"><Mail size={17} /> Adresse email</>
+              <label htmlFor="email" className="flex items-center gap-2 text-sm text-white/70"><Mail size={17} /> Adresse email</label>
               <input id="email" type="email" required autoComplete="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="tonadresse@email.com" className="w-full rounded-xl border border-white/15 bg-black p-4 outline-none focus:border-orange-400" />
               <button disabled={loading} className="w-full rounded-xl bg-orange-500 p-4 font-bold disabled:opacity-50">{loading ? "Envoi en cours…" : "Recevoir mon code"}</button>
             </form>
@@ -175,7 +175,7 @@ export default function DeuxZeroEventSite() {
           {step === "code" && (
             <form onSubmit={e => { e.preventDefault(); verifyCode(); }} className="mt-7 space-y-4">
               <p className="text-sm text-white/70">Code envoyé à <strong className="text-white">{email}</strong></p>
-              < htmlFor="code" className="block text-sm text-white/70">Code de vérification</>
+              <label htmlFor="code" className="block text-sm text-white/70">Code de vérification</label>
               <input id="code" required autoComplete="one-time-code" value={code} onChange={e => setCode(e.target.value)} placeholder="Code reçu par email" className="w-full rounded-xl border border-white/15 bg-black p-4 outline-none focus:border-orange-400" />
               <button disabled={loading} className="w-full rounded-xl bg-orange-500 p-4 font-bold disabled:opacity-50">{loading ? "Vérification…" : "Vérifier et accéder à mon espace"}</button>
               <div className="flex justify-between gap-4 text-sm"><button type="button" onClick={() => { setStep("email"); setCode(""); }} className="text-orange-300">Changer d’email</button><button type="button" disabled={loading} onClick={requestCode} className="text-orange-300">Renvoyer un code</button></div>
@@ -185,10 +185,10 @@ export default function DeuxZeroEventSite() {
           {step === "member" && profile && !profile.registered && (
             <form onSubmit={e => { e.preventDefault(); enroll(); }} className="mt-7 space-y-5">
               <p className="text-sm text-green-300"><ShieldCheck size={17} className="mr-2 inline" /> Email vérifié : {email}</p>
-              <div>< htmlFor="name" className="mb-2 block text-sm text-white/70">Nom complet</><input id="name" required minLength={2} value={name} onChange={e => setName(e.target.value)} className="w-full rounded-xl border border-white/15 bg-black p-4" /></div>
+              <div><label htmlFor="name" className="mb-2 block text-sm text-white/70">Nom complet</label><input id="name" required minLength={2} value={name} onChange={e => setName(e.target.value)} className="w-full rounded-xl border border-white/15 bg-black p-4" /></div>
               <fieldset className="space-y-3"><legend className="mb-3 font-semibold">Choisis ta formule</legend>
-                < className={`flex cursor-pointer items-center justify-between rounded-xl border p-4 ${formula === "transport" ? "border-orange-500 bg-orange-500/10" : "border-white/15"}`}><span><input type="radio" name="formula" checked={formula === "transport"} onChange={() => setFormula("transport")} className="mr-3" />Transport uniquement</span><strong>100 €</strong></>
-                < className={`flex cursor-pointer items-center justify-between rounded-xl border p-4 ${formula === "hotel" ? "border-orange-500 bg-orange-500/10" : "border-white/15"}`}><span><input type="radio" name="formula" checked={formula === "hotel"} onChange={() => setFormula("hotel")} className="mr-3" />Transport + hébergement</span><strong>150 €</strong></label>
+                <label className={`flex cursor-pointer items-center justify-between rounded-xl border p-4 ${formula === "transport" ? "border-orange-500 bg-orange-500/10" : "border-white/15"}`}><span><input type="radio" name="formula" checked={formula === "transport"} onChange={() => setFormula("transport")} className="mr-3" />Transport uniquement</span><strong>100 €</strong></label>
+                <label className={`flex cursor-pointer items-center justify-between rounded-xl border p-4 ${formula === "hotel" ? "border-orange-500 bg-orange-500/10" : "border-white/15"}`}><span><input type="radio" name="formula" checked={formula === "hotel"} onChange={() => setFormula("hotel")} className="mr-3" />Transport + hébergement</span><strong>150 €</strong></label>
               </fieldset>
               <button disabled={loading} className="w-full rounded-xl bg-orange-500 p-4 font-bold disabled:opacity-50">{loading ? "Enregistrement…" : "Confirmer mon inscription"}</button>
             </form>
@@ -243,16 +243,16 @@ export default function DeuxZeroEventSite() {
               )}
                {balance >= 25 ? (
                 <form onSubmit={e => { e.preventDefault(); declarePayment(); }} className="space-y-4 rounded-xl border border-white/10 bg-black/40 p-4">
-                  < htmlFor="amount" className="block text-sm text-white/70">Montant du versement à déclarer (€)</>
+                  <label htmlFor="amount" className="block text-sm text-white/70">Montant du versement à déclarer (€)</label>
                   <input id="amount" type="number" min={25} max={balance} step="25" value={amount} onChange={e => setAmount(Number(e.target.value))} className="w-full rounded-xl border border-white/15 bg-black p-3" />
                   <p className="text-xs text-white/50">Montants autorisés : 25 €, 50 €, 75 €, etc., sans dépasser le solde restant.</p>
                   <fieldset className="space-y-2">
                     <legend className="mb-2 text-sm font-semibold">Moyen de paiement</legend>
-                    {([ ["especes", "Espèces"], ["virement", "Virement"], ["paypal", "PayPal"] ] as const).map(([value, ]) => (
-                      < key={value} className={`flex cursor-pointer items-center gap-3 rounded-xl border p-3 ${paymentMethod === value ? "border-orange-500 bg-orange-500/10" : "border-white/15"}`}>
+                    {([ ["especes", "Espèces"], ["virement", "Virement"], ["paypal", "PayPal"] ] as const).map(([value, label]) => (
+                      <label key={value} className={`flex cursor-pointer items-center gap-3 rounded-xl border p-3 ${paymentMethod === value ? "border-orange-500 bg-orange-500/10" : "border-white/15"}`}>
                         <input type="radio" name="paymentMethod" checked={paymentMethod === value} onChange={() => setPaymentMethod(value)} />
-                        {}
-                      </>
+                        {label}
+                      </label>
                     ))}
                   </fieldset>
                   {paymentMethod === "paypal" && !paypalUrl && <p className="rounded-xl border border-orange-500/30 bg-orange-500/10 p-3 text-sm text-orange-200">Le lien PayPal officiel n’est pas encore configuré.</p>}
@@ -267,7 +267,7 @@ export default function DeuxZeroEventSite() {
                ) : <p className="rounded-xl bg-green-950/40 p-4 font-semibold text-green-300">🎉 Cotisation intégralement réglée !</p>}
               {ADMIN_SHEET_URL && <div className="rounded-xl border border-white/10 p-3 text-sm"><p className="mb-2 text-white/50">Accès administrateur uniquement (droits Google requis)</p><a href={ADMIN_SHEET_URL} target="_blank" rel="noopener noreferrer" className="text-orange-300 underline">Ouvrir le tableau Google Sheets de validation</a></div>}
               <div><h4 className="mb-3 font-bold">Historique des versements validés</h4>{Array.isArray(profile.payments) && profile.payments.length > 0 ? <div className="space-y-2">{profile.payments.map((p, i) => <div key={`${p.reference || "versement"}-${i}`} className="flex items-center justify-between gap-3 rounded-xl border border-white/10 p-3 text-sm"><div><p>{p.date ? new Date(p.date).toLocaleDateString("fr-FR") : "Date non précisée"}</p>{p.reference && <p className="mt-1 break-all text-xs text-white/50">Réf. {p.reference}</p>}</div><strong className="text-green-300">{euro(Number(p.amount || 0))}</strong></div>)}</div> : <p className="text-sm text-white/50">Aucun versement validé pour le moment.</p>}</div>
-              <button type="button" onClick={() => { setToken(""); setCode(""); setProfile(null); setStep("email"); }} className="text-sm text-white/50 underline">Se déconnecter</button>
+              <button type="button" onClick={() => { setToken(""); setCode(""); setProfile(null); setConfirmation(null); setSurplusChoice(""); setStep("email"); }} className="text-sm text-white/50 underline">Se déconnecter</button>
             </div>
           )}
         </div>
@@ -281,4 +281,3 @@ export default function DeuxZeroEventSite() {
     </main>
   );
 }
-```
