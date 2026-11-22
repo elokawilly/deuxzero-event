@@ -52,6 +52,10 @@ export default function DeuxZeroEventSite() {
   const [amount, setAmount] = useState(25);
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("especes");
   const [donationConfirmed, setDonationConfirmed] = useState(false);
+  const [editingFormula, setEditingFormula] = useState(false);
+  const [newFormula, setNewFormula] = useState<Formula>("transport");
+  const [formulaChoice, setFormulaChoice] = useState<"accept" | "refuse" | "">("");
+  const [paymentFeedback, setPaymentFeedback] = useState("");
   const [surplusChoice, setSurplusChoice] = useState<"accept" | "refuse" | "">("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -109,6 +113,8 @@ export default function DeuxZeroEventSite() {
   });
 
   const declarePayment = () => run(async () => {
+    setPaymentFeedback("Enregistrement de la déclaration en cours…");
+    try {
     if (!validAmount) throw new Error("Le montant saisi doit être un multiple positif de 25 €.");
     if (projectedSurplus > 0 && !donationConfirmed) throw new Error("Confirme ton intention de faire un don avant de continuer.");
     if (paymentMethod === "paypal" && !paypalUrl) {
@@ -120,7 +126,30 @@ export default function DeuxZeroEventSite() {
     const method = paymentMethod === "especes" ? "Espèces" : paymentMethod === "virement" ? "Virement" : "PayPal";
     setConfirmation({ amount, method, reference: String(result.reference || ""), paypal: paymentMethod === "paypal" });
     setDonationConfirmed(false);
+    setPaymentFeedback("✓ Déclaration enregistrée — En attente de validation du trésorier. Référence : " + String(result.reference || "non fournie"));
     setNotice("Déclaration enregistrée. Un récapitulatif a été demandé par e-mail pour toi et une notification pour l'administrateur. Ton solde reste inchangé jusqu'à validation.");
+    } catch (e) {
+      setPaymentFeedback(e instanceof Error ? "Échec de la déclaration : " + e.message : "Échec de la déclaration. Réessaie.");
+      throw e;
+    }
+  });
+
+  const changeFormula = () => run(async () => {
+    if (!profile?.registered) throw new Error("Inscription introuvable.");
+    if (newFormula === (profile.formula?.toLowerCase().includes("hébergement") ? "hotel" : "transport"))
+      throw new Error("Sélectionne une formule différente.");
+    const expected = amountFor(newFormula);
+    const expectedSurplus = Math.max(0, Math.round((Number(profile.paid || 0) - expected) * 100) / 100);
+    if (expectedSurplus > 0 && !formulaChoice) throw new Error("Choisis entre don et demande de remboursement.");
+    await api("changeFormula", { token, formula: newFormula, surplusChoice: expectedSurplus > 0 ? formulaChoice : "", expectedSurplus });
+    const data = await api("profile", { token });
+    loadProfile(data);
+    setEditingFormula(false);
+    setFormulaChoice("");
+    setDonationConfirmed(false);
+    setNotice(expectedSurplus > 0
+      ? "Formule modifiée. Ton choix concernant l'excédent a été enregistré et l'administrateur a été informé."
+      : "Formule modifiée. Ton nouveau solde a été recalculé.");
   });
 
   const decideSurplus = () => run(async () => {
@@ -201,6 +230,29 @@ export default function DeuxZeroEventSite() {
           {step === "member" && profile?.registered && (
             <div className="mt-7 space-y-6">
               <div className="flex items-start justify-between gap-3"><div><p className="text-sm text-green-300"><CheckCircle2 size={16} className="mr-2 inline" /> Membre inscrit</p><h3 className="mt-2 text-xl font-bold">{profile.name}</h3><p className="mt-1 break-all text-sm text-white/50">{email}</p><p className="mt-2 text-sm text-orange-300">{profile.formula}</p></div><button type="button" disabled={loading} onClick={refresh} title="Actualiser" className="rounded-xl border border-white/15 p-3 hover:bg-white/10"><RefreshCw size={18} /></button></div>
+              <section className="rounded-xl border border-white/15 p-4 space-y-3">
+                <div className="flex items-center justify-between gap-3"><h4 className="font-semibold">Ma formule</h4><button type="button" disabled={loading} onClick={() => { setEditingFormula(!editingFormula); setNewFormula(profile.formula?.toLowerCase().includes("hébergement") ? "hotel" : "transport"); setFormulaChoice(""); }} className="text-sm text-orange-300 underline">{editingFormula ? "Annuler" : "Changer ma formule"}</button></div>
+                {editingFormula && (
+                  <form onSubmit={e => { e.preventDefault(); changeFormula(); }} className="space-y-3">
+                    <label className="block text-sm text-white/70" htmlFor="newFormula">Nouvelle formule</label>
+                    <select id="newFormula" value={newFormula} onChange={e => { setNewFormula(e.target.value as Formula); setFormulaChoice(""); }} className="w-full rounded-xl border border-white/20 bg-black p-3">
+                      <option value="transport">Transport uniquement — 100 €</option><option value="hotel">Transport + hébergement — 150 €</option>
+                    </select>
+                    {newFormula !== (profile.formula?.toLowerCase().includes("hébergement") ? "hotel" : "transport") && (
+                      <div className="space-y-3 text-sm">
+                        <p>Nouveau montant attendu : <strong>{euro(amountFor(newFormula))}</strong> · Déjà validé : <strong>{euro(paid)}</strong> · Nouveau solde : <strong>{euro(Math.max(0, amountFor(newFormula) - paid))}</strong>.</p>
+                        {paid > amountFor(newFormula) && <div className="rounded-xl border border-amber-400/50 bg-amber-500/10 p-3 space-y-3">
+                          <p className="font-bold">⚠️ Excédent de {euro(Math.round((paid - amountFor(newFormula)) * 100) / 100)} après changement.</p>
+                          <p>Si tu souhaites un remboursement, contacte l'administrateur. Le remboursement n'est pas automatique. Sans consentement explicite, l'excédent ne constitue pas un don.</p>
+                          <label className="flex gap-2"><input type="radio" name="formulaChoice" checked={formulaChoice === "refuse"} onChange={() => setFormulaChoice("refuse")}/><span>Je demande une régularisation / un remboursement auprès de l'administrateur.</span></label>
+                          <label className="flex gap-2"><input type="radio" name="formulaChoice" checked={formulaChoice === "accept"} onChange={() => setFormulaChoice("accept")}/><span>Je consens explicitement à faire don de cet excédent à FC 2Zéro Paris.</span></label>
+                        </div>}
+                      </div>
+                    )}
+                    <button type="submit" disabled={loading || newFormula === (profile.formula?.toLowerCase().includes("hébergement") ? "hotel" : "transport") || (paid > amountFor(newFormula) && !formulaChoice)} className="w-full rounded-xl bg-orange-500 p-3 font-bold disabled:opacity-50">{loading ? "Modification en cours…" : "Confirmer le changement de formule"}</button>
+                  </form>
+                )}
+              </section>
               <div className="grid grid-cols-3 gap-2 text-center"><div className="rounded-xl bg-black p-3"><p className="text-xs text-white/50">Total</p><strong className="mt-1 block text-lg">{euro(total)}</strong></div><div className="rounded-xl bg-black p-3"><p className="text-xs text-white/50">Versé</p><strong className="mt-1 block text-lg text-green-300">{euro(paid)}</strong></div><div className="rounded-xl bg-black p-3"><p className="text-xs text-white/50">Solde</p><strong className="mt-1 block text-lg text-orange-300">{euro(balance)}</strong></div></div>
               <div><div className="mb-2 flex justify-between text-sm"><span>Progression</span><span>{progress} %</span></div><div className="h-3 overflow-hidden rounded-full bg-white/10"><div className="h-full rounded-full bg-green-500" style={{ width: `${progress}%` }} /></div></div>
                {surplus > 0 && (
@@ -248,7 +300,7 @@ export default function DeuxZeroEventSite() {
                <form onSubmit={e => { e.preventDefault(); declarePayment(); }} className="space-y-4 rounded-xl border border-white/10 bg-black/40 p-4">
                    {balance === 0 && <p className="rounded-xl bg-green-950/40 p-3 text-sm font-semibold text-green-300">🎉 Cotisation soldée ! Tu peux effectuer un versement supplémentaire, sous réserve de confirmer ton intention de don.</p>}
                    <label htmlFor="amount" className="block text-sm text-white/70">Montant du versement à déclarer (€)</label>
-                   <input id="amount" type="number" min={25} step={25} value={amount} onChange={e => { setAmount(Number(e.target.value)); setDonationConfirmed(false); }} className="w-full rounded-xl border border-white/15 bg-black p-3" />
+                   <input id="amount" type="number" min={25} step={25} value={amount} onChange={e => { setAmount(Number(e.target.value)); setDonationConfirmed(false); setPaymentFeedback(""); }} className="w-full rounded-xl border border-white/15 bg-black p-3" />
                    <p className="text-xs text-white/50">Montants autorisés : 25 €, 50 €, 75 €, etc. Les versements dépassant le solde nécessitent une confirmation explicite.</p>
                    {projectedSurplus > 0 && (
                      <div role="alert" className="space-y-3 rounded-xl border border-amber-400/50 bg-amber-500/10 p-4 text-sm text-amber-100">
@@ -271,6 +323,7 @@ export default function DeuxZeroEventSite() {
                   {paymentMethod === "paypal" && !paypalUrl && <p className="rounded-xl border border-orange-500/30 bg-orange-500/10 p-3 text-sm text-orange-200">Le lien PayPal officiel n’est pas encore configuré.</p>}
                   <p className="text-sm text-white/60">{paymentMethod === "paypal" ? "Après enregistrement, un message de confirmation et un bouton PayPal apparaîtront. Le versement restera en attente de confirmation administrative." : "Cette déclaration est indicative. Aucun IBAN n’est affiché et ton solde ne changera qu’après confirmation de réception par l’administrateur dans Google Sheets."}</p>
                    {!validAmount && <p className="text-sm text-orange-300">Choisis un multiple positif de 25 €.</p>}
+                  {paymentFeedback && <p role="status" aria-live="polite" className={`rounded-xl border p-3 text-sm ${paymentFeedback.startsWith("Échec") ? "border-red-500/50 bg-red-950/40 text-red-200" : "border-green-500/40 bg-green-950/30 text-green-200"}`}>{paymentFeedback}</p>}
                   <button type="submit" disabled={loading || !validAmount || (projectedSurplus > 0 && !donationConfirmed) || (paymentMethod === "paypal" && !paypalUrl)} className="flex w-full items-center justify-center gap-2 rounded-xl bg-orange-500 p-4 font-bold hover:bg-orange-400 disabled:cursor-not-allowed disabled:opacity-50">
                     <CreditCard size={18} /> {loading ? "Enregistrement…" : paymentMethod === "paypal" ? "Enregistrer et accéder à PayPal" : "Déclarer mon versement"}
                   </button>
