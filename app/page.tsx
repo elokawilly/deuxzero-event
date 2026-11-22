@@ -51,6 +51,7 @@ export default function DeuxZeroEventSite() {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [amount, setAmount] = useState(25);
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("especes");
+  const [donationConfirmed, setDonationConfirmed] = useState(false);
   const [surplusChoice, setSurplusChoice] = useState<"accept" | "refuse" | "">("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -108,15 +109,17 @@ export default function DeuxZeroEventSite() {
   });
 
   const declarePayment = () => run(async () => {
-    if (!validAmount) throw new Error("Le montant saisi n’est pas valide.");
+    if (!validAmount) throw new Error("Le montant saisi doit être un multiple positif de 25 €.");
+    if (projectedSurplus > 0 && !donationConfirmed) throw new Error("Confirme ton intention de faire un don avant de continuer.");
     if (paymentMethod === "paypal" && !paypalUrl) {
       throw new Error("Le compte PayPal officiel n’est pas encore configuré.");
     }
     // Cette action doit enregistrer une déclaration EN ATTENTE dans Google Sheets.
     // Elle ne doit JAMAIS augmenter le montant payé ni diminuer le solde.
-    const result = await api("declarePayment", { token, amount, paymentMethod });
+    const result = await api("declarePayment", { token, amount, paymentMethod, donationConsent: projectedSurplus > 0 && donationConfirmed, expectedSurplus: projectedSurplus });
     const method = paymentMethod === "especes" ? "Espèces" : paymentMethod === "virement" ? "Virement" : "PayPal";
     setConfirmation({ amount, method, reference: String(result.reference || ""), paypal: paymentMethod === "paypal" });
+    setDonationConfirmed(false);
     setNotice("Déclaration enregistrée. Un récapitulatif a été demandé par e-mail pour toi et une notification pour l'administrateur. Ton solde reste inchangé jusqu'à validation.");
   });
 
@@ -138,7 +141,8 @@ export default function DeuxZeroEventSite() {
   const paid = Number(profile?.paid ?? 0);
   const balance = Math.max(0, Number(profile?.balance ?? total - paid));
   const progress = total > 0 ? Math.min(100, Math.round((paid / total) * 100)) : 0;
-  const validAmount = Number.isInteger(amount) && amount > 0 && amount % 25 === 0 && amount <= balance;
+  const validAmount = Number.isSafeInteger(amount) && amount > 0 && amount % 25 === 0;
+  const projectedSurplus = validAmount ? Math.max(0, Math.round((amount - balance) * 100) / 100) : 0;
   const surplus = Math.max(0, Number(profile?.surplus ?? 0));
   const surplusDecision = profile?.surplusDecision ?? "Aucun";
   const paypalUrl = ASSOCIATION_PAYPAL_URL.replace(/\/$/, "") + "/" + amount;
@@ -241,12 +245,21 @@ export default function DeuxZeroEventSite() {
                   {confirmation.paypal && <a href={`${ASSOCIATION_PAYPAL_URL.replace(/\/$/, "")}/${confirmation.amount}`} target="_blank" rel="noopener noreferrer" className="inline-block rounded-xl bg-orange-500 px-4 py-3 font-bold text-white">Continuer vers PayPal</a>}
                 </div>
               )}
-               {balance >= 25 ? (
-                <form onSubmit={e => { e.preventDefault(); declarePayment(); }} className="space-y-4 rounded-xl border border-white/10 bg-black/40 p-4">
-                  <label htmlFor="amount" className="block text-sm text-white/70">Montant du versement à déclarer (€)</label>
-                  <input id="amount" type="number" min={25} max={balance} step="25" value={amount} onChange={e => setAmount(Number(e.target.value))} className="w-full rounded-xl border border-white/15 bg-black p-3" />
-                  <p className="text-xs text-white/50">Montants autorisés : 25 €, 50 €, 75 €, etc., sans dépasser le solde restant.</p>
-                  <fieldset className="space-y-2">
+               <form onSubmit={e => { e.preventDefault(); declarePayment(); }} className="space-y-4 rounded-xl border border-white/10 bg-black/40 p-4">
+                   {balance === 0 && <p className="rounded-xl bg-green-950/40 p-3 text-sm font-semibold text-green-300">🎉 Cotisation soldée ! Tu peux effectuer un versement supplémentaire, sous réserve de confirmer ton intention de don.</p>}
+                   <label htmlFor="amount" className="block text-sm text-white/70">Montant du versement à déclarer (€)</label>
+                   <input id="amount" type="number" min={25} step={25} value={amount} onChange={e => { setAmount(Number(e.target.value)); setDonationConfirmed(false); }} className="w-full rounded-xl border border-white/15 bg-black p-3" />
+                   <p className="text-xs text-white/50">Montants autorisés : 25 €, 50 €, 75 €, etc. Les versements dépassant le solde nécessitent une confirmation explicite.</p>
+                   {projectedSurplus > 0 && (
+                     <div role="alert" className="space-y-3 rounded-xl border border-amber-400/50 bg-amber-500/10 p-4 text-sm text-amber-100">
+                       <p className="font-bold">⚠️ Attention : vous êtes sur le point de faire un don.</p>
+                       <p>Sur les {euro(amount)} déclarés, {euro(projectedSurplus)} dépassent votre solde actuel de {euro(balance)}.</p>
+                       <p>Confirmez-vous votre intention de faire don de {euro(projectedSurplus)} à FC 2Zéro Paris ?</p>
+                       <label className="flex cursor-pointer items-start gap-3"><input type="checkbox" checked={donationConfirmed} onChange={e => setDonationConfirmed(e.target.checked)} className="mt-1" /><span><strong>Oui, je confirme mon intention de don.</strong> Le montant effectivement reçu devra être validé par le trésorier. Le don définitif nécessitera ensuite la confirmation de l’excédent exact dans mon espace personnel.</span></label>
+                       <button type="button" onClick={() => { setDonationConfirmed(false); setAmount(25); }} className="rounded-lg border border-white/30 px-3 py-2">Non, annuler cette intention</button>
+                     </div>
+                   )}
+<fieldset className="space-y-2">
                     <legend className="mb-2 text-sm font-semibold">Moyen de paiement</legend>
                     {([ ["especes", "Espèces"], ["virement", "Virement"], ["paypal", "PayPal"] ] as const).map(([value, label]) => (
                       <label key={value} className={`flex cursor-pointer items-center gap-3 rounded-xl border p-3 ${paymentMethod === value ? "border-orange-500 bg-orange-500/10" : "border-white/15"}`}>
@@ -257,15 +270,12 @@ export default function DeuxZeroEventSite() {
                   </fieldset>
                   {paymentMethod === "paypal" && !paypalUrl && <p className="rounded-xl border border-orange-500/30 bg-orange-500/10 p-3 text-sm text-orange-200">Le lien PayPal officiel n’est pas encore configuré.</p>}
                   <p className="text-sm text-white/60">{paymentMethod === "paypal" ? "Après enregistrement, un message de confirmation et un bouton PayPal apparaîtront. Le versement restera en attente de confirmation administrative." : "Cette déclaration est indicative. Aucun IBAN n’est affiché et ton solde ne changera qu’après confirmation de réception par l’administrateur dans Google Sheets."}</p>
-                  {!validAmount && <p className="text-sm text-orange-300">Choisis un multiple de 25 € sans dépasser le solde restant.</p>}
-                  <button type="submit" disabled={loading || !validAmount || (paymentMethod === "paypal" && !paypalUrl)} className="flex w-full items-center justify-center gap-2 rounded-xl bg-orange-500 p-4 font-bold hover:bg-orange-400 disabled:cursor-not-allowed disabled:opacity-50">
+                   {!validAmount && <p className="text-sm text-orange-300">Choisis un multiple positif de 25 €.</p>}
+                  <button type="submit" disabled={loading || !validAmount || (projectedSurplus > 0 && !donationConfirmed) || (paymentMethod === "paypal" && !paypalUrl)} className="flex w-full items-center justify-center gap-2 rounded-xl bg-orange-500 p-4 font-bold hover:bg-orange-400 disabled:cursor-not-allowed disabled:opacity-50">
                     <CreditCard size={18} /> {loading ? "Enregistrement…" : paymentMethod === "paypal" ? "Enregistrer et accéder à PayPal" : "Déclarer mon versement"}
                   </button>
                 </form>
-               ) : balance > 0 ? (
-                 <p className="rounded-xl border border-orange-500/30 bg-orange-500/10 p-4 text-sm text-orange-200">Le solde restant est de {euro(balance)}, inférieur à 25 €. Contacte l’administrateur pour régulariser ce montant : la déclaration en ligne accepte uniquement les multiples de 25 €.</p>
-               ) : <p className="rounded-xl bg-green-950/40 p-4 font-semibold text-green-300">🎉 Cotisation intégralement réglée !</p>}
-              {ADMIN_SHEET_URL && <div className="rounded-xl border border-white/10 p-3 text-sm"><p className="mb-2 text-white/50">Accès administrateur uniquement (droits Google requis)</p><a href={ADMIN_SHEET_URL} target="_blank" rel="noopener noreferrer" className="text-orange-300 underline">Ouvrir le tableau Google Sheets de validation</a></div>}
+{ADMIN_SHEET_URL && <div className="rounded-xl border border-white/10 p-3 text-sm"><p className="mb-2 text-white/50">Accès administrateur uniquement (droits Google requis)</p><a href={ADMIN_SHEET_URL} target="_blank" rel="noopener noreferrer" className="text-orange-300 underline">Ouvrir le tableau Google Sheets de validation</a></div>}
               <div><h4 className="mb-3 font-bold">Historique des versements validés</h4>{Array.isArray(profile.payments) && profile.payments.length > 0 ? <div className="space-y-2">{profile.payments.map((p, i) => <div key={`${p.reference || "versement"}-${i}`} className="flex items-center justify-between gap-3 rounded-xl border border-white/10 p-3 text-sm"><div><p>{p.date ? new Date(p.date).toLocaleDateString("fr-FR") : "Date non précisée"}</p>{p.reference && <p className="mt-1 break-all text-xs text-white/50">Réf. {p.reference}</p>}</div><strong className="text-green-300">{euro(Number(p.amount || 0))}</strong></div>)}</div> : <p className="text-sm text-white/50">Aucun versement validé pour le moment.</p>}</div>
               <button type="button" onClick={() => { setToken(""); setCode(""); setProfile(null); setConfirmation(null); setSurplusChoice(""); setStep("email"); }} className="text-sm text-white/50 underline">Se déconnecter</button>
             </div>
