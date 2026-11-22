@@ -9,7 +9,8 @@ const allowedActions = [
   "profile",
   "enroll",
   "declarePayment",
-  "decideSurplus"
+  "decideSurplus",
+  "changeFormula"
 ];
 export async function POST(request) {
   try {
