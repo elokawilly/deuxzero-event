@@ -185,7 +185,16 @@ export default function DeuxZeroEventSite() {
           <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-orange-500/30 bg-orange-500/10 px-4 py-2 text-sm text-orange-300">
             <Trophy size={16} /> FC 2Zéro Paris
           </div>
-          <h1 className="text-4xl font-black md:text-6xl">Déplacement de mai 2027</h1>
+          <h1 className="text-4xl font-black md:text-6xl">
+  Déplacement à Montpellier
+  <span className="mt-3 block text-orange-500">
+    Mai 2027
+  </span>
+</h1>
+
+<p className="mt-5 text-lg font-semibold text-orange-300">
+  📅 Date limite de cotisation : 28 février 2027
+</p>
           <p className="mx-auto mt-5 max-w-2xl text-lg text-white/70">Choisis ta formule, participe à ton rythme et retrouve le suivi de tes cotisations en toute simplicité.</p>
           <a href="#cotisation" className="mt-8 inline-block rounded-2xl bg-orange-500 px-8 py-4 text-lg font-bold hover:bg-orange-400">Accéder à mon espace</a>
         </div>
