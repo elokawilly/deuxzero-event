@@ -43,7 +43,7 @@ async function api(action: string, data: Record<string, unknown> = {}) {
 }
 
 export default function DeuxZeroEventSite() {
-  const [email, setEmail] = useState("");
+  const [el, setEl] = useState("");
   const [code, setCode] = useState("");
   const [token, setToken] = useState("");
   const [step, setStep] = useState<"email" | "code" | "member">("email");
@@ -188,7 +188,7 @@ export default function DeuxZeroEventSite() {
           <h1 className="text-4xl font-black md:text-6xl">
   Déplacement à Montpellier
   <span className="mt-3 block text-orange-500">
-    Mai 2027
+    le 22 Mai 2027
   </span>
 </h1>
 
@@ -350,7 +350,7 @@ export default function DeuxZeroEventSite() {
 
         <aside className="space-y-6">
           <div className="flex justify-center"><Image src="/logo-fc2zero.png" alt="Logo FC 2Zéro Paris" width={170} height={170} priority className="object-contain" /></div>
-          <div className="rounded-3xl border border-white/10 bg-neutral-900 p-6 md:p-8"><h2 className="text-2xl font-black">Deux formules au choix</h2><div className="mt-6 space-y-4"><div className="rounded-2xl border border-orange-500/30 bg-orange-500/10 p-5"><p className="text-lg font-semibold">🚌 Transport uniquement</p><p className="mt-2 text-4xl font-black">100 €</p></div><div className="rounded-2xl border border-white/15 p-5"><p className="text-lg font-semibold">🚌 🏨 Transport + hébergement</p><p className="mt-2 text-4xl font-black">150 €</p><p className="mt-1 text-sm text-white/60">100 € de transport + 50 € d’hébergement</p></div></div><div className="mt-6 rounded-2xl bg-white/5 p-5"><h3 className="font-bold">Comment ça marche ?</h3><p className="mt-3 leading-7 text-white/70">1. Vérifie ton email et inscris-toi.<br />2. Choisis ta formule.<br />3. Déclare ton versement en espèces, par virement ou via PayPal.<br />4. L’administrateur confirme la réception dans Google Sheets.<br />5. Ton solde est alors actualisé.</p></div><p className="mt-5 text-sm text-white/50">Objectif : constituer les cotisations dès janvier–février 2027, en préparation du déplacement de mai 2027.</p></div>
+          <div className="rounded-3xl border border-white/10 bg-neutral-900 p-6 md:p-8"><h2 className="text-2xl font-black">Deux formules au choix</h2><div className="mt-6 space-y-4"><div className="rounded-2xl border border-orange-500/30 bg-orange-500/10 p-5"><p className="text-lg font-semibold">🚌 Transport uniquement</p><p className="mt-2 text-4xl font-black">100 €</p></div><div className="rounded-2xl border border-white/15 p-5"><p className="text-lg font-semibold">🚌 🏨 Transport + hébergement</p><p className="mt-2 text-4xl font-black">150 €</p><p className="mt-1 text-sm text-white/60">100 € de transport + 50 € d’hébergement</p></div></div><div className="mt-6 rounded-2xl bg-white/5 p-5"><h3 className="font-bold">Comment ça marche ?</h3><p className="mt-3 leading-7 text-white/70">1. Vérifie ton email et inscris-toi.<br />2. Choisis ta formule.<br />3. Déclare ton versement en espèces, par virement ou via PayPal.<br />4. L’administrateur confirme la réception dans Google Sheets.<br />5. Ton solde est alors actualisé.</p></div><p className="mt-5 text-sm text-white/50">Objectif : constituer les cotisations dès janvier–février 2027, en préparation du déplacement du 22 mai 2027.</p></div>
         </aside>
       </section>
       <footer className="border-t border-white/10 px-5 py-8 text-center text-sm text-neutral-500">FC 2Zéro Paris — Ensemble sur le terrain, ensemble en famille.</footer>
