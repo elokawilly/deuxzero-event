@@ -43,7 +43,7 @@ async function api(action: string, data: Record<string, unknown> = {}) {
 }
 
 export default function DeuxZeroEventSite() {
-  const [el, setEl] = useState("");
+  const [email, setEmail] = useState("");
   const [code, setCode] = useState("");
   const [token, setToken] = useState("");
   const [step, setStep] = useState<"email" | "code" | "member">("email");
